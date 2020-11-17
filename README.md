@@ -1,8 +1,8 @@
 # grab-grab
 
 - Clone
-- Create folder "build" in the project
-- Execute: 
-    - cmake -G"Unix Makefiles" ../../grab-grab/
+- Execute:
+    - cd build
+    - cmake ..
     - make
     - ./assign_3
