@@ -46,6 +46,14 @@ enum DataID {
 /* Number of objects in the scene */
 const int nbObjects = 3;
 
+typedef struct scale {
+    float scale_x;
+    float scale_y;
+    float scale_z;
+} Scale;
+
+float scales[nbObjects][16];
+
 typedef struct cuboids {
     const int id;
     float size;
@@ -53,6 +61,7 @@ typedef struct cuboids {
     float transformation[16];
     float model[16];
     float speed;
+    Scale scale;
 
     GLuint VBO;
     GLuint CBO;
@@ -64,11 +73,11 @@ GLuint defaultVAO;
 
 Cuboids cuboids[nbObjects] = {
         // first
-        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}},
+        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.0f, 0.5f, 2.0f}},
         // second
-        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}},
+        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.0f, 3.0f, 4.0f}},
         // third
-        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}}
+        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.5f, 1.0f, 1.0f}}
 };
 
 /* Strings for loading and storing shader code */
@@ -91,10 +100,8 @@ float RotationMatrixAnimZ[16];
 float RotationMatrixAnim[16];
 
 float Translate[16]; /* translation matrix */
-float Scale[16];     /* scale matrix */
 
 float NewTranslate[16];
-float NewScale[16];
 
 /* Variables for storing current rotation angles */
 float angleX, angleY, angleZ = 0.0f;
@@ -166,8 +173,6 @@ void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
     glGenBuffers(1, IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer_data), index_buffer_data, GL_STATIC_DRAW);
-
-
 
     /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
     glGenVertexArrays(1, VAO);
@@ -273,13 +278,13 @@ void OnIdle() {
     MultiplyMatrix(RotationMatrixAnim, RotationMatrixAnimZ, RotationMatrixAnim);
 
     /* Model matrix of the first object: apply scaling and rotation */
-    MultiplyMatrix(RotationMatrixAnim, Scale, ModelMatrix[0]);
+    MultiplyMatrix(RotationMatrixAnim, scales[0], ModelMatrix[0]);
 
     /* Model matrix of the second object: apply translation and rotation */
     MultiplyMatrix(RotationMatrixAnim, Translate, ModelMatrix[1]);
 
     MultiplyMatrix(RotationMatrixAnim, NewTranslate, ModelMatrix[2]);
-    MultiplyMatrix(ModelMatrix[2], NewScale, ModelMatrix[2]);
+    MultiplyMatrix(ModelMatrix[2], scales[2], ModelMatrix[2]);
 }
 
 
@@ -393,7 +398,8 @@ void Initialize() {
 
     /* Create 3 cube meshes */
     for (int i = 0; i < nbObjects; i++) {
-        createCubeMesh(&cuboids->VBO, &cuboids->IBO, &cuboids->CBO, &cuboids->VAO);
+        GLuint* vbo = &cuboids[i].VBO;
+        createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
     }
 
     /* Set background (clear) color to blue */
@@ -412,15 +418,18 @@ void Initialize() {
     SetIdentityMatrix(ProjectionMatrix);
     SetIdentityMatrix(ViewMatrix);
     /* init scale matrix with a non-uniform scaling */
-    SetScaleMatrix(2.0f, 0.5f, 2.0f, Scale);
 
-    SetScaleMatrix(0.5f, 1.0f, 1.0f, NewScale);
+
+    for (int i = 0; i < nbObjects; i++) {
+        SetScaleMatrix(cuboids[i].scale.scale_x, cuboids[i].scale.scale_y, cuboids[i].scale.scale_z, scales[i]);
+    }
     SetTranslation(0.0, 3.0, 0.0, NewTranslate);
 
 
     /* Initialize model matrices */
-    for (int i = 0; i < nbObjects; i++)
+    for (int i = 0; i < nbObjects; i++) {
         SetIdentityMatrix(ModelMatrix[i]);
+    }
 
     SetTranslation(5, 0, 0, Translate);
 
@@ -515,7 +524,7 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // <-- activate this line on MacOS
+
     window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
