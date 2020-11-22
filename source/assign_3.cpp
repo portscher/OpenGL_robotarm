@@ -46,6 +46,7 @@ enum DataID {
 /* Number of objects in the scene */
 const int nbObjects = 3;
 
+/* Scaling factors */
 typedef struct scale {
     float scale_x;
     float scale_y;
@@ -53,6 +54,15 @@ typedef struct scale {
 } Scale;
 
 float scales[nbObjects][16];
+
+/* Translation factors*/
+typedef struct translation {
+    float translation_x;
+    float translation_y;
+    float translation_z;
+} Translation;
+
+float translations[nbObjects][16];
 
 typedef struct cuboids {
     const int id;
@@ -62,6 +72,8 @@ typedef struct cuboids {
     float model[16];
     float speed;
     Scale scale;
+    Translation translation;
+    float colour[3];
 
     GLuint VBO;
     GLuint CBO;
@@ -72,12 +84,15 @@ typedef struct cuboids {
 GLuint defaultVAO;
 
 Cuboids cuboids[nbObjects] = {
-        // first
-        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.0f, 0.5f, 2.0f}},
+        // first (base)
+        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
+         .translation = {0.0,0.0,0.0}},
         // second
-        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.0f, 3.0f, 4.0f}},
+        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
+         .translation = {0.0,2.25,.0}},
         // third
-        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.5f, 1.0f, 1.0f}}
+        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
+         .translation = {1.125, 4.75,0}}
 };
 
 /* Strings for loading and storing shader code */
@@ -85,7 +100,6 @@ static const char *VertexShaderString;
 static const char *FragmentShaderString;
 
 GLuint ShaderProgram;
-
 
 /* Matrices for uniform variables in vertex shader */
 float ProjectionMatrix[16];             /* Perspective projection matrix */
@@ -98,10 +112,6 @@ float RotationMatrixAnimX[16];
 float RotationMatrixAnimY[16];
 float RotationMatrixAnimZ[16];
 float RotationMatrixAnim[16];
-
-float Translate[16]; /* translation matrix */
-
-float NewTranslate[16];
 
 /* Variables for storing current rotation angles */
 float angleX, angleY, angleZ = 0.0f;
@@ -277,14 +287,11 @@ void OnIdle() {
     MultiplyMatrix(RotationMatrixAnimX, RotationMatrixAnimY, RotationMatrixAnim);
     MultiplyMatrix(RotationMatrixAnim, RotationMatrixAnimZ, RotationMatrixAnim);
 
-    /* Model matrix of the first object: apply scaling and rotation */
-    MultiplyMatrix(RotationMatrixAnim, scales[0], ModelMatrix[0]);
-
-    /* Model matrix of the second object: apply translation and rotation */
-    MultiplyMatrix(RotationMatrixAnim, Translate, ModelMatrix[1]);
-
-    MultiplyMatrix(RotationMatrixAnim, NewTranslate, ModelMatrix[2]);
-    MultiplyMatrix(ModelMatrix[2], scales[2], ModelMatrix[2]);
+    /* Apply scaling and translation to Model Matrices */
+    for (int i = 0; i < nbObjects; i++) {
+        MultiplyMatrix(RotationMatrixAnim, translations[i], ModelMatrix[i]);
+        MultiplyMatrix(ModelMatrix[i], scales[i], ModelMatrix[i]);
+    }
 }
 
 
@@ -398,7 +405,7 @@ void Initialize() {
 
     /* Create 3 cube meshes */
     for (int i = 0; i < nbObjects; i++) {
-        GLuint* vbo = &cuboids[i].VBO;
+        GLuint *vbo = &cuboids[i].VBO;
         createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
     }
 
@@ -421,17 +428,16 @@ void Initialize() {
 
 
     for (int i = 0; i < nbObjects; i++) {
+        /* Initialize scale matrices */
         SetScaleMatrix(cuboids[i].scale.scale_x, cuboids[i].scale.scale_y, cuboids[i].scale.scale_z, scales[i]);
-    }
-    SetTranslation(0.0, 3.0, 0.0, NewTranslate);
 
+        /* Initialize Translation matrices */
+        SetTranslation(cuboids[i].translation.translation_x, cuboids[i].translation.translation_y,
+                       cuboids[i].translation.translation_z, translations[i]);
 
-    /* Initialize model matrices */
-    for (int i = 0; i < nbObjects; i++) {
+        /* Initialize model matrices */
         SetIdentityMatrix(ModelMatrix[i]);
     }
-
-    SetTranslation(5, 0, 0, Translate);
 
     /* Initialize animation matrices */
     SetIdentityMatrix(RotationMatrixAnimX);
