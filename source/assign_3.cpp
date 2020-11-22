@@ -44,7 +44,7 @@ enum DataID {
 };
 
 /* Number of objects in the scene */
-const int nbObjects = 3;
+const int nbObjects = 4;
 
 /* Scaling factors */
 typedef struct scale {
@@ -73,7 +73,6 @@ typedef struct cuboids {
     float speed;
     Scale scale;
     Translation translation;
-    float colour[3];
 
     GLuint VBO;
     GLuint CBO;
@@ -92,7 +91,10 @@ Cuboids cuboids[nbObjects] = {
          .translation = {0.0,2.25,.0}},
         // third
         {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
-         .translation = {1.125, 4.75,0}}
+         .translation = {1.125, 4.75,0}},
+         // fourth
+        {.id = 4, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
+                .translation = {2.35, 3.9,0}},
 };
 
 /* Strings for loading and storing shader code */
