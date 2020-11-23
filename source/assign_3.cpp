@@ -38,52 +38,85 @@ GLFWwindow *window;
 /* Flag for starting/stopping animation */
 GLboolean anim = GL_TRUE;
 
+/* Indices to vertex attributes; in this case position only */
+enum DataID {
+    vPosition = 0, vColor = 1
+};
+
 /* Number of objects in the scene */
-int nbObjects = 2;
+const int nbObjects = 4;
 
-/* Define handles to several vertex buffer objects */
-GLuint VBOs[2];
+/* Scaling factors */
+typedef struct scale {
+    float scale_x;
+    float scale_y;
+    float scale_z;
+} Scale;
 
-/* Define handle to several color buffer objects */
-GLuint CBOs[2];
+float scales[nbObjects][16];
 
-/* Define handles to several index buffer objects */
-GLuint IBOs[2];
+/* Translation factors*/
+typedef struct translation {
+    float translation_x;
+    float translation_y;
+    float translation_z;
+} Translation;
 
-/* Define handles to several vertex array objects */
-GLuint VAOs[2];
+float translations[nbObjects][16];
+
+typedef struct cuboids {
+    const int id;
+    float size;
+    float distance;
+    float transformation[16];
+    float model[16];
+    float speed;
+    Scale scale;
+    Translation translation;
+
+    GLuint VBO;
+    GLuint CBO;
+    GLuint IBO;
+    GLuint VAO;
+} Cuboids;
 
 GLuint defaultVAO;
 
-/* Indices to vertex attributes; in this case positon only */ 
-enum DataID {vPosition = 0, vColor = 1};
+Cuboids cuboids[nbObjects] = {
+        // first (base)
+        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
+         .translation = {0.0,0.0,0.0}},
+        // second
+        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
+         .translation = {0.0,2.25,.0}},
+        // third
+        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
+         .translation = {1.125, 4.75,0}},
+         // fourth
+        {.id = 4, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
+                .translation = {2.35, 3.9,0}},
+};
 
 /* Strings for loading and storing shader code */
-static const char* VertexShaderString;
-static const char* FragmentShaderString;
+static const char *VertexShaderString;
+static const char *FragmentShaderString;
 
 GLuint ShaderProgram;
 
-
 /* Matrices for uniform variables in vertex shader */
-float ProjectionMatrix[16];     /* Perspective projection matrix */
-float ViewMatrix[16];           /* Camera view matrix */
+float ProjectionMatrix[16];             /* Perspective projection matrix */
+float ViewMatrix[16];                   /* Camera view matrix */
+float ModelMatrix[nbObjects][16];       /* Array of model matrix */
 
-float ModelMatrix[2][16];       /* Array of model matrix */
 
-  
 /* Rotation matrices */
 float RotationMatrixAnimX[16];
 float RotationMatrixAnimY[16];
 float RotationMatrixAnimZ[16];
 float RotationMatrixAnim[16];
 
-float Translate[16]; /* translation matrix */
-float Scale[16];     /* scale matrix */ 
-
-
 /* Variables for storing current rotation angles */
-float angleX, angleY, angleZ = 0.0f; 
+float angleX, angleY, angleZ = 0.0f;
 
 
 /* Reference time for animation */
@@ -100,43 +133,42 @@ double oldTime = 0;
 * the geometry.
 *
 *******************************************************************/
-void createCubeMesh(GLuint* VBO, GLuint* IBO, GLuint* CBO, GLuint* VAO)
-{
+void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
     GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0,
-         1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
-        -1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0,  1.0, -1.0,
-        -1.0,  1.0, -1.0,
+            -1.0, -1.0, 1.0,
+            1.0, -1.0, 1.0,
+            1.0, 1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, -1.0,
+            1.0, 1.0, -1.0,
+            -1.0, 1.0, -1.0,
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
-        0.0, 0.0, 1.0,
-        1.0, 0.0, 1.0,
-        1.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-        0.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+            1.0, 0.0, 1.0,
+            1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0,
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
     };
 
     GLushort index_buffer_data[] = { /* Indices of 6*2 triangles (6 sides) */
-        0, 1, 2,
-        2, 3, 0,
-        1, 5, 6,
-        6, 2, 1,
-        7, 6, 5,
-        5, 4, 7,
-        4, 0, 3,
-        3, 7, 4,
-        4, 5, 1,
-        1, 0, 4,
-        3, 2, 6,
-        6, 7, 3,
+            0, 1, 2,
+            2, 3, 0,
+            1, 5, 6,
+            6, 2, 1,
+            7, 6, 5,
+            5, 4, 7,
+            4, 0, 3,
+            3, 7, 4,
+            4, 5, 1,
+            1, 0, 4,
+            3, 2, 6,
+            6, 7, 3,
     };
 
     /* Generate and write vertex buffer data */
@@ -154,25 +186,23 @@ void createCubeMesh(GLuint* VBO, GLuint* IBO, GLuint* CBO, GLuint* VAO)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer_data), index_buffer_data, GL_STATIC_DRAW);
 
-
-   
     /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
     glGenVertexArrays(1, VAO);
-	glBindVertexArray(*VAO);
-	/* Bind buffer with vertex data of currently active object */
-	glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-	glEnableVertexAttribArray(vPosition);
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindVertexArray(*VAO);
+    /* Bind buffer with vertex data of currently active object */
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+    glEnableVertexAttribArray(vPosition);
+    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	/* Bind color buffer */
-	glBindBuffer(GL_ARRAY_BUFFER, *CBO);
-	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
+    /* Bind color buffer */
+    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
+    glEnableVertexAttribArray(vColor);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	/* Bind index buffer */
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
+    /* Bind index buffer */
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
 
-	glBindVertexArray(defaultVAO);
+    glBindVertexArray(defaultVAO);
 }
 
 
@@ -187,38 +217,33 @@ void createCubeMesh(GLuint* VBO, GLuint* IBO, GLuint* CBO, GLuint* VAO)
 *
 *******************************************************************/
 
-void Display()
-{
+void Display() {
     /* Clear window; color specified in 'Initialize()' */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* For each object in the scene */
-    for(int i = 0; i < nbObjects; i++)
-    {
+    for (int i = 0; i < nbObjects; i++) {
 
         GLint size;
         glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
         /* Associate program with uniform shader matrices */
         GLint projectionUniform = glGetUniformLocation(ShaderProgram, "ProjectionMatrix");
-        if (projectionUniform == -1)
-        {
+        if (projectionUniform == -1) {
             fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
             exit(-1);
         }
         glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjectionMatrix);
 
         GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
-        if (ViewUniform == -1)
-        {
+        if (ViewUniform == -1) {
             fprintf(stderr, "Could not bind uniform ViewMatrix\n");
             exit(-1);
         }
         glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
 
         GLint RotationUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
-        if (RotationUniform == -1)
-        {
+        if (RotationUniform == -1) {
             fprintf(stderr, "Could not bind uniform ModelMatrix\n");
             exit(-1);
         }
@@ -226,11 +251,11 @@ void Display()
 
 
         /* Bind VAO of the current object */
-        glBindVertexArray(VAOs[0]);
+        glBindVertexArray(cuboids[0].VAO);
         /* Draw the data contained in the VAO */
-        glDrawElements(GL_TRIANGLES, size/sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
+        glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
 
-		glBindVertexArray(defaultVAO);
+        glBindVertexArray(defaultVAO);
     }
     /* Swap between front and back buffer */
     glfwSwapBuffers(window);
@@ -246,17 +271,15 @@ void Display()
 *
 *******************************************************************/
 
-void OnIdle()
-{
+void OnIdle() {
     /* Determine delta time between two frames to ensure constant animation */
     double newTime = glfwGetTime();
     double delta = newTime - oldTime;
     oldTime = newTime;
 
-    if(anim)
-    {
+    if (anim) {
         /* Increment rotation angle and update matrix */
-        angleY = fmod(angleY + delta*20.0f, 360.0);
+        angleY = fmod(angleY + delta * 20.0f, 360.0);
         SetRotationY(angleY, RotationMatrixAnimY);
     }
 
@@ -266,12 +289,11 @@ void OnIdle()
     MultiplyMatrix(RotationMatrixAnimX, RotationMatrixAnimY, RotationMatrixAnim);
     MultiplyMatrix(RotationMatrixAnim, RotationMatrixAnimZ, RotationMatrixAnim);
 
-    /* Model matrix of the first object: apply scaling and rotation */
-    MultiplyMatrix(RotationMatrixAnim, Scale, ModelMatrix[0]);    
-
-    /* Model matrix of the second object: apply translation and rotation */
-    MultiplyMatrix(RotationMatrixAnim, Translate, ModelMatrix[1]);
-
+    /* Apply scaling and translation to Model Matrices */
+    for (int i = 0; i < nbObjects; i++) {
+        MultiplyMatrix(RotationMatrixAnim, translations[i], ModelMatrix[i]);
+        MultiplyMatrix(ModelMatrix[i], scales[i], ModelMatrix[i]);
+    }
 }
 
 
@@ -283,13 +305,11 @@ void OnIdle()
 *
 *******************************************************************/
 
-void AddShader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType)
-{
+void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) {
     /* Create shader object */
     GLuint ShaderObj = glCreateShader(ShaderType);
 
-    if (ShaderObj == 0) 
-    {
+    if (ShaderObj == 0) {
         fprintf(stderr, "Error creating shader type %d\n", ShaderType);
         exit(0);
     }
@@ -304,8 +324,7 @@ void AddShader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType)
     glCompileShader(ShaderObj);
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
 
-    if (!success) 
-    {
+    if (!success) {
         glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
@@ -326,13 +345,11 @@ void AddShader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType)
 *
 *******************************************************************/
 
-void CreateShaderProgram()
-{
+void CreateShaderProgram() {
     /* Allocate shader object */
     ShaderProgram = glCreateProgram();
 
-    if (ShaderProgram == 0) 
-    {
+    if (ShaderProgram == 0) {
         fprintf(stderr, "Error creating shader program\n");
         exit(1);
     }
@@ -354,19 +371,17 @@ void CreateShaderProgram()
     /* Check results of linking step */
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
 
-    if (Success == 0) 
-    {
+    if (Success == 0) {
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
 
-    /* Check if shader program can be executed */ 
+    /* Check if shader program can be executed */
     glValidateProgram(ShaderProgram);
     glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
 
-    if (!Success) 
-    {
+    if (!Success) {
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
@@ -388,47 +403,53 @@ void CreateShaderProgram()
 *
 *******************************************************************/
 
-void Initialize()
-{   
+void Initialize() {
 
-    /* Create 2 cube meshes */
-    createCubeMesh(&VBOs[0], &IBOs[0], &CBOs[0], &VAOs[0]);
-    createCubeMesh(&VBOs[1], &IBOs[1], &CBOs[1], &VAOs[1]);
+    /* Create 3 cube meshes */
+    for (int i = 0; i < nbObjects; i++) {
+        GLuint *vbo = &cuboids[i].VBO;
+        createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
+    }
 
-	
-    /* Set background (clear) color to blue */ 
+    /* Set background (clear) color to blue */
     glClearColor(0.0, 0.0, 0.4, 0.0);
 
     /* Enable depth testing */
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);    
+    glDepthFunc(GL_LESS);
 
 
     /* Setup shaders and shader program */
-    CreateShaderProgram();  
+    CreateShaderProgram();
 
 
     /* Initialize matrices */
     SetIdentityMatrix(ProjectionMatrix);
     SetIdentityMatrix(ViewMatrix);
     /* init scale matrix with a non-uniform scaling */
-    SetScaleMatrix(2.0f,0.5f,2.0f,Scale);
 
-    /* Initalize model matrices */
-    for(int i=0; i< nbObjects; i++)
+
+    for (int i = 0; i < nbObjects; i++) {
+        /* Initialize scale matrices */
+        SetScaleMatrix(cuboids[i].scale.scale_x, cuboids[i].scale.scale_y, cuboids[i].scale.scale_z, scales[i]);
+
+        /* Initialize Translation matrices */
+        SetTranslation(cuboids[i].translation.translation_x, cuboids[i].translation.translation_y,
+                       cuboids[i].translation.translation_z, translations[i]);
+
+        /* Initialize model matrices */
         SetIdentityMatrix(ModelMatrix[i]);
-
-    SetTranslation(5, 0, 0, Translate);
+    }
 
     /* Initialize animation matrices */
     SetIdentityMatrix(RotationMatrixAnimX);
     SetIdentityMatrix(RotationMatrixAnimY);
     SetIdentityMatrix(RotationMatrixAnimZ);
     SetIdentityMatrix(RotationMatrixAnim);
-    
+
     /* Set projection transform */
     float aspect = winWidth / winHeight;
-    float nearPlane = 1.0; 
+    float nearPlane = 1.0;
     float farPlane = 50.0;
     SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, ProjectionMatrix); /* build projection matrix */
 
@@ -451,8 +472,7 @@ void Initialize()
 * width, height = new dimesnion of the window after resize
 *******************************************************************/
 
-void Resize(GLFWwindow* window, int width, int height)
-{
+void Resize(GLFWwindow *window, int width, int height) {
     /* update viewport with new dimensions */
     glViewport(0, 0, width, height);
 }
@@ -467,8 +487,7 @@ void Resize(GLFWwindow* window, int width, int height)
 * key = id of the key activated
 * action = id of the action (pressed, released, maintained ...)
 *******************************************************************/
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
     /* when key "Q" is pressed */
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
@@ -493,8 +512,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 *
 * yoffset = value of the scrolling along Y axis
 *******************************************************************/
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     std::cout << "scrolling Y offest = " << yoffset << std::endl;
 }
 
@@ -507,15 +525,14 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 *
 *******************************************************************/
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
 
     /* Initialize GLFW and create a window */
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // <-- activate this line on MacOS
+
     window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
@@ -529,8 +546,7 @@ int main(int argc, char** argv)
     /* Initialize GL extension wrangler */
     glewExperimental = true;
     GLenum res = glewInit();
-    if (res != GLEW_OK) 
-    {
+    if (res != GLEW_OK) {
         fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
         return 1;
     }
@@ -543,15 +559,13 @@ int main(int argc, char** argv)
     Initialize();
 
     /* Rendering loop */
-    while (!glfwWindowShouldClose(window)) 
-    {
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         /* Update scene */
         OnIdle();
         /* Draw scene */
         Display();
     }
-
 
     /* Close window */
     glfwDestroyWindow(window);
