@@ -10,10 +10,10 @@
 
 
 /* Standard includes */
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <cstdlib>
 
@@ -25,8 +25,8 @@
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
 
-
-
+/* Number of objects in the scene */
+#define nbObjects 4
 /*----------------------------------------------------------------*/
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -43,36 +43,16 @@ enum DataID {
     vPosition = 0, vColor = 1
 };
 
-/* Number of objects in the scene */
-const int nbObjects = 4;
-
-/* Scaling factors */
-typedef struct scale {
-    float scale_x;
-    float scale_y;
-    float scale_z;
-} Scale;
-
 float scales[nbObjects][16];
-
-/* Translation factors*/
-typedef struct translation {
-    float translation_x;
-    float translation_y;
-    float translation_z;
-} Translation;
-
 float translations[nbObjects][16];
 
 typedef struct cuboids {
     const int id;
-    float size;
     float distance;
     float transformation[16];
     float model[16];
-    float speed;
-    Scale scale;
-    Translation translation;
+    float scale[3];
+    float translation[3];
 
     GLuint VBO;
     GLuint CBO;
@@ -94,7 +74,7 @@ Cuboids cuboids[nbObjects] = {
          .translation = {1.125, 4.75,0}},
          // fourth
         {.id = 4, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
-                .translation = {2.35, 3.9,0}},
+         .translation = {2.35, 3.9,0}},
 };
 
 /* Strings for loading and storing shader code */
@@ -129,20 +109,20 @@ double oldTime = 0;
 *
 * createCubeMesh
 *
-* This function creates a cube mesh and fill buffer objects with
+* This function creates a cube mesh and fills buffer objects with
 * the geometry.
 *
 *******************************************************************/
 void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
     GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            -1.0, -1.0, 1.0,
-            1.0, -1.0, 1.0,
-            1.0, 1.0, 1.0,
-            -1.0, 1.0, 1.0,
-            -1.0, -1.0, -1.0,
-            1.0, -1.0, -1.0,
-            1.0, 1.0, -1.0,
-            -1.0, 1.0, -1.0,
+            -1.0,   -1.0,   1.0,
+            1.0,    -1.0,   1.0,
+            1.0,    1.0,    1.0,
+            -1.0,   1.0,    1.0,
+            -1.0,   -1.0,   -1.0,
+            1.0,    -1.0,   -1.0,
+            1.0,    1.0,    -1.0,
+            -1.0,   1.0,    -1.0,
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
@@ -305,7 +285,7 @@ void OnIdle() {
 *
 *******************************************************************/
 
-void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) {
+void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType) {
     /* Create shader object */
     GLuint ShaderObj = glCreateShader(ShaderType);
 
@@ -315,7 +295,7 @@ void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) 
     }
 
     /* Associate shader source code string with shader object */
-    glShaderSource(ShaderObj, 1, &ShaderCode, NULL);
+    glShaderSource(ShaderObj, 1, &ShaderCode, nullptr);
 
     GLint success = 0;
     GLchar InfoLog[1024];
@@ -325,13 +305,13 @@ void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) 
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-        glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
+        glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
     }
 
     /* Associate shader with shader program */
-    glAttachShader(ShaderProgram, ShaderObj);
+    glAttachShader(UsedShaderProgram, ShaderObj);
 }
 
 
@@ -372,7 +352,7 @@ void CreateShaderProgram() {
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
 
     if (Success == 0) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -382,7 +362,7 @@ void CreateShaderProgram() {
     glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
 
     if (!Success) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -405,7 +385,7 @@ void CreateShaderProgram() {
 
 void Initialize() {
 
-    /* Create 3 cube meshes */
+    /* Create cube meshes */
     for (int i = 0; i < nbObjects; i++) {
         GLuint *vbo = &cuboids[i].VBO;
         createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
@@ -431,11 +411,11 @@ void Initialize() {
 
     for (int i = 0; i < nbObjects; i++) {
         /* Initialize scale matrices */
-        SetScaleMatrix(cuboids[i].scale.scale_x, cuboids[i].scale.scale_y, cuboids[i].scale.scale_z, scales[i]);
+        SetScaleMatrix(cuboids[i].scale[0], cuboids[i].scale[1], cuboids[i].scale[2], scales[i]);
 
         /* Initialize Translation matrices */
-        SetTranslation(cuboids[i].translation.translation_x, cuboids[i].translation.translation_y,
-                       cuboids[i].translation.translation_z, translations[i]);
+        SetTranslation(cuboids[i].translation[0], cuboids[i].translation[1],
+                       cuboids[i].translation[2], translations[i]);
 
         /* Initialize model matrices */
         SetIdentityMatrix(ModelMatrix[i]);

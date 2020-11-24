@@ -150,7 +150,7 @@ void SetTranslation(float x, float y, float z, float* result)
 *
 *******************************************************************/
 
-void MultiplyMatrix(float* m1, float* m2, float* result)
+void MultiplyMatrix(const float* m1, const float* m2, float* result)
 {
     int i;
     float temp[16];
