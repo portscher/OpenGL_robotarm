@@ -46,8 +46,9 @@ enum DataID {
 float scales[nbObjects][16];
 float translations[nbObjects][16];
 
-typedef struct cuboids {
+typedef struct cuboid {
     const int id;
+    const int parent_id; // hierarchical structure, if one limb moves, all child limbs have to move as well
     float distance;
     float transformation[16];
     float model[16];
@@ -58,22 +59,22 @@ typedef struct cuboids {
     GLuint CBO;
     GLuint IBO;
     GLuint VAO;
-} Cuboids;
+} Cuboid;
 
 GLuint defaultVAO;
 
-Cuboids cuboids[nbObjects] = {
+Cuboid cuboids[nbObjects] = {
         // first (base)
         {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
          .translation = {0.0,0.0,0.0}},
         // second
-        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
+        {.id = 2, .parent_id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
          .translation = {0.0,2.25,.0}},
         // third
-        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
+        {.id = 3, .parent_id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
          .translation = {1.125, 4.75,0}},
          // fourth
-        {.id = 4, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
+        {.id = 4, .parent_id = 3, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
          .translation = {2.35, 3.9,0}},
 };
 
@@ -243,6 +244,23 @@ void Display() {
 
 
 /******************************************************************
+ * updateLimb
+ * This function updates the limb's position, movement etc.
+ * for every time unit
+ *******************************************************************/
+
+void updateLimb(Cuboid* cuboid,  double delta) {
+
+    /* Increment rotation angle and update matrix */
+    angleY = fmod(angleY + delta * 20.0f, 360.0);
+    SetRotationY(angleY, RotationMatrixAnimY);
+
+    MultiplyMatrix(RotationMatrixAnim, translations[cuboid->id-1], ModelMatrix[cuboid->id-1]);
+    MultiplyMatrix(ModelMatrix[cuboid->id-1], scales[cuboid->id-1], ModelMatrix[cuboid->id-1]);
+}
+
+
+/******************************************************************
 *
 * OnIdle
 *
@@ -257,13 +275,6 @@ void OnIdle() {
     double delta = newTime - oldTime;
     oldTime = newTime;
 
-    if (anim) {
-        /* Increment rotation angle and update matrix */
-        angleY = fmod(angleY + delta * 20.0f, 360.0);
-        SetRotationY(angleY, RotationMatrixAnimY);
-    }
-
-
     /* Update of transformation matrices
      * Note order of transformations and rotation of reference axes */
     MultiplyMatrix(RotationMatrixAnimX, RotationMatrixAnimY, RotationMatrixAnim);
@@ -271,8 +282,7 @@ void OnIdle() {
 
     /* Apply scaling and translation to Model Matrices */
     for (int i = 0; i < nbObjects; i++) {
-        MultiplyMatrix(RotationMatrixAnim, translations[i], ModelMatrix[i]);
-        MultiplyMatrix(ModelMatrix[i], scales[i], ModelMatrix[i]);
+        updateLimb(&cuboids[i], anim ? delta : 0);
     }
 }
 
