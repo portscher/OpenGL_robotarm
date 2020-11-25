@@ -75,7 +75,7 @@ Cuboid cuboids[nbObjects] = {
          .translation = {0.0,2.25,.0}, .current_rotation = {0, 0, 0}},
         // third
         {.id = 3, .parent_id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
-         .translation = {1.125, 4.75,0}, .current_rotation = {0,0, .0}},
+         .translation = {1.125, 4.75,0}, .current_rotation = {0,0,0}},
          // fourth
         {.id = 4, .parent_id = 3, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
          .translation = {2.35, 3.9,0}, .current_rotation = {0,0,0}},
@@ -245,6 +245,17 @@ void Display() {
  * for every time unit
  *******************************************************************/
 
+void updateBottom(Cuboid* cuboid) {
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1]  + 0.0f, 360.0);
+    SetRotationY(cuboid->current_rotation[1] , RotationMatrixAnimY[cuboid->id-1]);
+
+    SetIdentityMatrix(cuboid->transformation);
+    MultiplyMatrix(RotationMatrixAnimY[cuboid->id-1], cuboid->transformation, cuboid->transformation);
+
+    MultiplyMatrix(translations[cuboid->id-1], RotationMatrixAnim[cuboid->id-1], cuboid->model);
+    MultiplyMatrix(cuboid->model, scales[cuboid->id-1], cuboid->model);
+}
+
 void updateLimb(Cuboid* cuboid, double delta) {
 
     SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id-1]);
@@ -264,7 +275,7 @@ void updateLimb(Cuboid* cuboid, double delta) {
 
     float temp[16];
     SetIdentityMatrix(temp);
-    //SetIdentityMatrix(cuboid->transformation);
+    SetIdentityMatrix(cuboid->transformation);
 
     if (cuboid->id != 0) {
         SetTranslation(cuboids[cuboid->parent_id-1].translation[0], cuboids[cuboid->parent_id-1].translation[1], cuboids[cuboid->parent_id-1].translation[2], temp);
@@ -309,7 +320,13 @@ void OnIdle() {
 
     /* Apply scaling and translation to Model Matrices */
     for (int i = 0; i < nbObjects; i++) {
-        updateLimb(&cuboids[i], anim ? delta : 0);
+        if (i == 0) {
+            updateBottom(&cuboids[i]);
+        }
+        else {
+            updateLimb(&cuboids[i], anim ? delta : 0);
+        }
+
     }
 }
 
