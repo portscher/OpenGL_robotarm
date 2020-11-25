@@ -57,6 +57,9 @@ typedef struct cuboid {
     float scale[3];
     float translation[3];
     float current_rotation[3]; /* Variables for storing current rotation angles */
+    int rotate_around_x;
+    int rotate_around_y;
+    int rotate_around_z;
 
     GLuint VBO;
     GLuint CBO;
@@ -67,18 +70,18 @@ typedef struct cuboid {
 GLuint defaultVAO;
 
 Cuboid cuboids[nbObjects] = {
-        // first (base)
-        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
-         .translation = {0.0,0.0,0.0}, .current_rotation = {0, 0, 0}},
-        // second
-        {.id = 2, .parent_id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
-         .translation = {0.0,2.25,.0}, .current_rotation = {0, 0, 0}},
-        // third
-        {.id = 3, .parent_id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
-         .translation = {1.125, 4.75,0}, .current_rotation = {0,0,0}},
-         // fourth
-        {.id = 4, .parent_id = 3, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
-         .translation = {2.35, 3.9,0}, .current_rotation = {0,0,0}},
+        // bottom
+        {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
+                .translation = {0.0, 0.0, 0.0}, .current_rotation = {0, 0, 0}},
+        // first limb
+        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
+                .translation = {0.0, 2.25, .0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 0, .rotate_around_y = 1},
+        // second limb
+        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
+                .translation = {1.125, 4.75, 0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 1, .rotate_around_y = 0},
+        // third limb
+        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
+                .translation = {2.35, 3.9, 0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 1},
 };
 
 /* Strings for loading and storing shader code */
@@ -113,14 +116,14 @@ double oldTime = 0;
 *******************************************************************/
 void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
     GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            -1.0,   -1.0,   1.0,
-            1.0,    -1.0,   1.0,
-            1.0,    1.0,    1.0,
-            -1.0,   1.0,    1.0,
-            -1.0,   -1.0,   -1.0,
-            1.0,    -1.0,   -1.0,
-            1.0,    1.0,    -1.0,
-            -1.0,   1.0,    -1.0,
+            -1.0, -1.0, 1.0,
+            1.0, -1.0, 1.0,
+            1.0, 1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, -1.0,
+            1.0, 1.0, -1.0,
+            -1.0, 1.0, -1.0,
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
@@ -238,6 +241,28 @@ void Display() {
     glfwSwapBuffers(window);
 }
 
+void getCuboidPosition(Cuboid *cuboid, float angle, float result[3]) {
+    result[0] = cuboid->distance * sinf(angle);
+    result[1] = 0;
+    result[2] = cuboid->distance * cosf(angle);
+}
+
+/******************************************************************
+ * updateBottom
+ *******************************************************************/
+void updateBottom(Cuboid *cuboid) {
+    SetIdentityMatrix(cuboid->transformation);
+    SetIdentityMatrix(cuboid->model);
+
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + 0.0f, 360.0);
+    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
+
+    SetIdentityMatrix(cuboid->transformation);
+    MultiplyMatrix(RotationMatrixAnimY[cuboid->id], cuboid->transformation, cuboid->transformation);
+
+    MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id], cuboid->model);
+    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
+}
 
 /******************************************************************
  * updateLimb
@@ -245,63 +270,45 @@ void Display() {
  * for every time unit
  *******************************************************************/
 
-void updateBottom(Cuboid* cuboid) {
-    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1]  + 0.0f, 360.0);
-    SetRotationY(cuboid->current_rotation[1] , RotationMatrixAnimY[cuboid->id-1]);
-
-    SetIdentityMatrix(cuboid->transformation);
-    MultiplyMatrix(RotationMatrixAnimY[cuboid->id-1], cuboid->transformation, cuboid->transformation);
-
-    MultiplyMatrix(translations[cuboid->id-1], RotationMatrixAnim[cuboid->id-1], cuboid->model);
-    MultiplyMatrix(cuboid->model, scales[cuboid->id-1], cuboid->model);
-}
-
-void updateLimb(Cuboid* cuboid, double delta) {
-
-    SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id-1]);
-    MultiplyMatrix(translations[cuboid->id-1], cuboid->transformation, cuboid->transformation);
+void updateLimb(Cuboid *cuboid, double delta) {
+    SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id]);
+    MultiplyMatrix(translations[cuboid->id], cuboid->transformation, cuboid->transformation);
 
     /* Increment rotation angle and update matrix */
-    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1]  + delta * 20.0f, 360.0);
-    SetRotationY(cuboid->current_rotation[1] , RotationMatrixAnimY[cuboid->id-1]);
-
-    if (cuboid->id == 3 || cuboid->id == 4) {
-        cuboid->current_rotation[0] = fmod(cuboid->current_rotation[0]  + delta * 20.0f, 360.0);
-        SetRotationX(cuboid->current_rotation[0] , RotationMatrixAnimX[cuboid->id-1]);
-
-        cuboid->current_rotation[2] = fmod(cuboid->current_rotation[2]  + delta * 20.0f, 360.0);
-        SetRotationZ(cuboid->current_rotation[2] , RotationMatrixAnimZ[cuboid->id-1]);
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + delta * 20.0f, 360.0);
+    if (cuboid->rotate_around_x != 0) {
+        cuboid->current_rotation[0] = fmod(cuboid->current_rotation[0] + delta * 20.0f, 360.0);
     }
 
     float temp[16];
     SetIdentityMatrix(temp);
     SetIdentityMatrix(cuboid->transformation);
 
-    if (cuboid->id != 0) {
-        SetTranslation(cuboids[cuboid->parent_id-1].translation[0], cuboids[cuboid->parent_id-1].translation[1], cuboids[cuboid->parent_id-1].translation[2], temp);
-        MultiplyMatrix(cuboids[cuboid->parent_id-1].transformation, temp, cuboid->transformation);
+    SetTranslation(cuboids[cuboid->id].distance, 0, 0, temp);
+    MultiplyMatrix(cuboids[cuboid->parent_id].transformation, temp, cuboid->transformation);
 
-        SetRotationX(cuboids[cuboid->parent_id-1].current_rotation[0], temp);
-        MultiplyMatrix(RotationMatrixAnimX[cuboid->id-1], temp, RotationMatrixAnimX[cuboid->id-1]);
+    float position[3];
+    getCuboidPosition(cuboid, cuboid->current_rotation[1], position); // TODO not working properly
+    SetTranslation(position[0], position[1], position[2], temp);
+    MultiplyMatrix(cuboid->transformation, temp, cuboid->transformation);
 
-        SetRotationY(cuboids[cuboid->parent_id-1].current_rotation[1], temp);
-        MultiplyMatrix(RotationMatrixAnimY[cuboid->id-1], temp, RotationMatrixAnimY[cuboid->id-1]);
-
-        SetRotationZ(cuboids[cuboid->parent_id-1].current_rotation[2], temp);
-        MultiplyMatrix(RotationMatrixAnimZ[cuboid->id-1], temp, RotationMatrixAnimZ[cuboid->id-1]);
-    }
+    MultiplyMatrix(cuboid->transformation, scales[cuboid->id], cuboid->transformation);
+    SetRotationX(cuboid->current_rotation[0], RotationMatrixAnimX[cuboid->id]);
+    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
 
     /* Update of transformation matrices
     * Note order of transformations and rotation of reference axes */
-    MultiplyMatrix(RotationMatrixAnimX[cuboid->id-1], RotationMatrixAnimY[cuboid->id-1], RotationMatrixAnim[cuboid->id-1]);
-    MultiplyMatrix(RotationMatrixAnim[cuboid->id-1], RotationMatrixAnimZ[cuboid->id-1], RotationMatrixAnim[cuboid->id-1]);
+    MultiplyMatrix(RotationMatrixAnimX[cuboid->id], RotationMatrixAnimY[cuboid->id], RotationMatrixAnim[cuboid->id]);
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], RotationMatrixAnimZ[cuboid->id], RotationMatrixAnim[cuboid->id]);
 
-    MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id-1], cuboid->transformation);
+    SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id]);
+    MultiplyMatrix(translations[cuboid->id], cuboid->transformation, cuboid->transformation);
 
-    MultiplyMatrix(translations[cuboid->id-1], RotationMatrixAnim[cuboid->id-1], cuboid->model);
-    MultiplyMatrix(cuboid->model, scales[cuboid->id-1], cuboid->model);
+    MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id], cuboid->transformation);
+
+    MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id], cuboid->model);
+    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
 }
-
 
 /******************************************************************
 *
@@ -319,14 +326,9 @@ void OnIdle() {
     oldTime = newTime;
 
     /* Apply scaling and translation to Model Matrices */
-    for (int i = 0; i < nbObjects; i++) {
-        if (i == 0) {
-            updateBottom(&cuboids[i]);
-        }
-        else {
-            updateLimb(&cuboids[i], anim ? delta : 0);
-        }
-
+    updateBottom(&cuboids[0]);
+    for (int i = 1; i < nbObjects; i ++) {
+        updateLimb(&cuboids[i], anim ? delta : 0);
     }
 }
 
