@@ -57,9 +57,7 @@ typedef struct cuboid {
     float scale[3];
     float translation[3];
     float current_rotation[3]; /* Variables for storing current rotation angles */
-    int rotate_around_x;
-    int rotate_around_y;
-    int rotate_around_z;
+    float rotation_angle;
 
     GLuint VBO;
     GLuint CBO;
@@ -69,19 +67,34 @@ typedef struct cuboid {
 
 GLuint defaultVAO;
 
+const float THICKNESS = 0.3f;
+const float FIRST_LIMB_HEIGHT = 2.5f;
+const float FIRST_LIMB_Y_TRANSLATION = 2.25f;
+const float SECOND_LIMB_LENGTH = 1.5f;
+const float SECOND_LIMB_X_TRANSLATION = SECOND_LIMB_LENGTH / 2 + 0.45f;
+const float THIRD_LIMB_LENGTH = 1.0f;
+
 Cuboid cuboids[nbObjects] = {
         // bottom
         {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
-                .translation = {0.0, 0.0, 0.0}, .current_rotation = {0, 0, 0}},
+                .translation = {0}, .current_rotation = {0}},
         // first limb
-        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
-                .translation = {0.0, 2.25, .0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 0, .rotate_around_y = 1},
+        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+                                                                                               FIRST_LIMB_HEIGHT,
+                                                                                               THICKNESS},
+                .translation = {0.0, FIRST_LIMB_Y_TRANSLATION, .0}, .current_rotation = {0}},
         // second limb
-        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
-                .translation = {1.125, 4.75, 0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 1, .rotate_around_y = 0},
+        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{SECOND_LIMB_LENGTH,
+                                                                                               THICKNESS, THICKNESS},
+                .translation = {SECOND_LIMB_X_TRANSLATION, FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION,
+                                0}, .current_rotation = {0}, .rotation_angle = 90},
         // third limb
-        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
-                .translation = {2.35, 3.9, 0}, .current_rotation = {0, 0, 0}, .rotate_around_x = 1},
+        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+                                                                                               THIRD_LIMB_LENGTH,
+                                                                                               THICKNESS},
+                .translation = {SECOND_LIMB_LENGTH + 0.9f,
+                                FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION - THIRD_LIMB_LENGTH,
+                                0}, .current_rotation = {0}},
 };
 
 /* Strings for loading and storing shader code */
@@ -245,6 +258,13 @@ void getCuboidPosition(Cuboid *cuboid, float angle, float result[3]) {
     result[0] = cuboid->distance * sinf(angle);
     result[1] = 0;
     result[2] = cuboid->distance * cosf(angle);
+
+    // for cuboids with an inclined "orbit":
+    if (cuboid->rotation_angle != 0) {
+        result[0] = (result[0] * cosf(cuboid->rotation_angle)) - (result[1] * sinf(cuboid->rotation_angle));
+        result[1] = (result[0] * sinf(cuboid->rotation_angle)) + (result[1] * cosf(cuboid->rotation_angle));
+        result[2] = result[2];
+    }
 }
 
 /******************************************************************
@@ -271,42 +291,27 @@ void updateBottom(Cuboid *cuboid) {
  *******************************************************************/
 
 void updateLimb(Cuboid *cuboid, double delta) {
-    SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id]);
-    MultiplyMatrix(translations[cuboid->id], cuboid->transformation, cuboid->transformation);
 
-    /* Increment rotation angle and update matrix */
-    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + delta * 20.0f, 360.0);
-    if (cuboid->rotate_around_x != 0) {
-        cuboid->current_rotation[0] = fmod(cuboid->current_rotation[0] + delta * 20.0f, 360.0);
-    }
-
-    float temp[16];
-    SetIdentityMatrix(temp);
     SetIdentityMatrix(cuboid->transformation);
 
-    SetTranslation(cuboids[cuboid->id].distance, 0, 0, temp);
-    MultiplyMatrix(cuboids[cuboid->parent_id].transformation, temp, cuboid->transformation);
-
-    float position[3];
-    getCuboidPosition(cuboid, cuboid->current_rotation[1], position); // TODO not working properly
-    SetTranslation(position[0], position[1], position[2], temp);
-    MultiplyMatrix(cuboid->transformation, temp, cuboid->transformation);
-
-    MultiplyMatrix(cuboid->transformation, scales[cuboid->id], cuboid->transformation);
-    SetRotationX(cuboid->current_rotation[0], RotationMatrixAnimX[cuboid->id]);
+    if (cuboid->parent_id != 0) {
+        MultiplyMatrix(cuboid->transformation, cuboids[cuboid->parent_id].transformation, cuboid->transformation);
+    }
+    // 1. Initiate rotation around Y axis for all objects
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + delta * 20.0f, 360.0);
     SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
 
-    /* Update of transformation matrices
-    * Note order of transformations and rotation of reference axes */
+    // Multiply all three rotation matrices
     MultiplyMatrix(RotationMatrixAnimX[cuboid->id], RotationMatrixAnimY[cuboid->id], RotationMatrixAnim[cuboid->id]);
     MultiplyMatrix(RotationMatrixAnim[cuboid->id], RotationMatrixAnimZ[cuboid->id], RotationMatrixAnim[cuboid->id]);
 
-    SetTranslation(cuboid->translation[0], cuboid->translation[1], cuboid->translation[2], translations[cuboid->id]);
-    MultiplyMatrix(translations[cuboid->id], cuboid->transformation, cuboid->transformation);
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], cuboid->transformation, cuboid->transformation);
 
-    MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id], cuboid->transformation);
+    // 2. Add Scaling to the transformation matrix
+    MultiplyMatrix(cuboid->transformation, scales[cuboid->id], cuboid->transformation);
 
-    MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id], cuboid->model);
+    // 3. Add Translation to the transformation matrix
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
     MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
 }
 
@@ -327,7 +332,7 @@ void OnIdle() {
 
     /* Apply scaling and translation to Model Matrices */
     updateBottom(&cuboids[0]);
-    for (int i = 1; i < nbObjects; i ++) {
+    for (int i = 1; i < nbObjects; i++) {
         updateLimb(&cuboids[i], anim ? delta : 0);
     }
 }
