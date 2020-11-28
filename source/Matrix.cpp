@@ -206,4 +206,80 @@ void SetPerspectiveMatrix(float fov, float aspect, float nearPlane,
     memcpy(result, temp, 16*sizeof(float));
 }
 
+/**
+ * @brief Multiplies the given scalar with the given vector.
+ * 
+ * @param scalar The scalar value.
+ * @param vector The vector that should be multiplied by the scalar.
+ * @param vectorSize The size of the vector.
+ * @param result The array where the result of the multiplication will be stored.
+ */
+void ScalarMultiplication(float scalar, float* vector, int vectorSize, float* result)
+{
+    float multiplication[vectorSize];
+    for(int i = 0; i < vectorSize; i++)
+    {
+        multiplication[i] = vector[i] * scalar;
+    }
 
+    memcpy(result, multiplication, vectorSize * sizeof(float));
+}
+
+/**
+ * @brief Adds two matrices.
+ * 
+ * @param a First matrix
+ * @param b Another matrix
+ * @param matrixSize The size of each matrix itself.
+ * @param result The array where the result of the addition will be stored.
+ */
+void Add(float* a, float* b, int matrixSize, float* result)
+{
+    float addition[matrixSize];
+    for(int i = 0; i < matrixSize; i++)
+    {
+        addition[i] = a[i] + b[i];
+    }
+
+    memcpy(result, addition, matrixSize * sizeof(float));
+}
+
+/**
+ * @brief Substracts two matrices.
+ * 
+ * @param a First matrix.
+ * @param b Another matrix.
+ * @param matrixSize The size of each matrix itself.
+ * @param result The array where the result of the substraction will be stored.
+ */
+void Substract(float* a, float* b, int matrixSize, float* result)
+{
+    float substraction[matrixSize];
+    for(int i = 0; i < matrixSize; i++)
+    {
+        substraction[i] = a[i] - b[i];
+    }
+
+    memcpy(result, substraction, matrixSize * sizeof(float));
+}
+
+/**
+ * @brief Calculates the cross product of two matrices.
+ * 
+ * @param a First matrix.
+ * @param b Another matrix.
+ * @param result The array where the result of the cross product will be stored.
+ * @note The used formular for caluclating the cross product of two matrices 
+ * can be found at https://de.wikipedia.org/wiki/Kreuzprodukt
+ */
+void CrossProduct(float* a, float* b, float* result)
+{
+    float crossProduct[3] =
+    {
+        (a[2] * b[3]) - (a[3] * b[2]),
+        (a[3] * b[1]) - (a[1] * b[3]),
+        (a[1] * b[2]) - (a[2] * b[1]),
+    };
+
+    memcpy(result, crossProduct, 3 * sizeof(float));
+}

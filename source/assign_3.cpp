@@ -118,6 +118,28 @@ double oldTime = 0;
 
 /*----------------------------------------------------------------*/
 
+typedef struct camera {
+    float currentPosition[3];
+    float front[3];
+    float up[3];
+    float xAngle;
+    float yAngle;
+    int lookingAt;
+    float fieldOfView;
+    float viewMatrix[16];
+    float projectionMatrix[16];
+} Camera;
+
+// Initialize camera
+Camera cam = {
+    .currentPosition = {0., 5., -25.},
+    .front = {0., 0., -1.},
+    .up = {0., 1., 0.,},
+    .xAngle = -15.,
+    .yAngle = 0.,
+    .lookingAt = 0,
+    .fieldOfView = 45.,
+};
 
 /******************************************************************
 *
@@ -558,6 +580,27 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 *******************************************************************/
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     std::cout << "scrolling Y offest = " << yoffset << std::endl;
+}
+
+void UpdateCameraPosition() {
+    float cameraSpeed = .2;
+    float temp[3];
+    if (keyboard.up)
+    {
+        ScalarMultiplication(cameraSpeed, cam.front, 3, temp);
+        Add(cam.currentPosition, temp, 3, cam.currentPosition);
+    }
+
+    if (keyboard.down)
+    {
+        ScalarMultiplication(cameraSpeed, cam.front, 3, temp);
+        Substract(cam.currentPosition, temp, 3, cam.currentPosition);
+    }
+
+    if (keyboard.left)
+    {
+        CrossProduct(cam.front, cam.up, temp);
+    }
 }
 
 
