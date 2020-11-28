@@ -10,10 +10,10 @@
 
 
 /* Standard includes */
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <cstdlib>
 
@@ -25,8 +25,8 @@
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
 
-
-
+/* Number of objects in the scene */
+#define nbObjects 4
 /*----------------------------------------------------------------*/
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -43,58 +43,58 @@ enum DataID {
     vPosition = 0, vColor = 1
 };
 
-/* Number of objects in the scene */
-const int nbObjects = 4;
-
-/* Scaling factors */
-typedef struct scale {
-    float scale_x;
-    float scale_y;
-    float scale_z;
-} Scale;
-
 float scales[nbObjects][16];
-
-/* Translation factors*/
-typedef struct translation {
-    float translation_x;
-    float translation_y;
-    float translation_z;
-} Translation;
-
 float translations[nbObjects][16];
+float rotations[nbObjects][16];
 
-typedef struct cuboids {
+typedef struct cuboid {
     const int id;
-    float size;
+    const int parent_id; // hierarchical structure, if one limb moves, all child limbs have to move as well
     float distance;
     float transformation[16];
     float model[16];
-    float speed;
-    Scale scale;
-    Translation translation;
+
+    float scale[3];
+    float translation[3];
+    float current_rotation[3]; /* Variables for storing current rotation angles */
+    float rotation_angle;
 
     GLuint VBO;
     GLuint CBO;
     GLuint IBO;
     GLuint VAO;
-} Cuboids;
+} Cuboid;
 
 GLuint defaultVAO;
 
-Cuboids cuboids[nbObjects] = {
-        // first (base)
-        {.id = 1, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
-         .translation = {0.0,0.0,0.0}},
-        // second
-        {.id = 2, .distance = 0, .transformation = {0}, .model = {0}, .scale{0.3f, 2.5f, 0.3f},
-         .translation = {0.0,2.25,.0}},
-        // third
-        {.id = 3, .distance = 0, .transformation = {0}, .model = {0}, .scale{1.5f, 0.3f, 0.3f},
-         .translation = {1.125, 4.75,0}},
-         // fourth
-        {.id = 4, .distance = 2.5, .transformation = {0}, .model = {0}, .scale{0.3f, 1.0f, 0.3f},
-                .translation = {2.35, 3.9,0}},
+const float THICKNESS = 0.3f;
+const float FIRST_LIMB_HEIGHT = 2.5f;
+const float FIRST_LIMB_Y_TRANSLATION = 2.25f;
+const float SECOND_LIMB_LENGTH = 1.5f;
+const float SECOND_LIMB_X_TRANSLATION = SECOND_LIMB_LENGTH / 2 + 0.45f;
+const float THIRD_LIMB_LENGTH = 1.0f;
+
+Cuboid cuboids[nbObjects] = {
+        // bottom
+        {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
+                .translation = {0}, .current_rotation = {0}},
+        // first limb
+        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+                                                                                               FIRST_LIMB_HEIGHT,
+                                                                                               THICKNESS},
+                .translation = {0.0, FIRST_LIMB_Y_TRANSLATION, .0}, .current_rotation = {0}},
+        // second limb
+        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{SECOND_LIMB_LENGTH,
+                                                                                               THICKNESS, THICKNESS},
+                .translation = {SECOND_LIMB_X_TRANSLATION, FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION,
+                                0}, .current_rotation = {0}, .rotation_angle = 90},
+        // third limb
+        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+                                                                                               THIRD_LIMB_LENGTH,
+                                                                                               THICKNESS},
+                .translation = {SECOND_LIMB_LENGTH + 0.9f,
+                                FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION - THIRD_LIMB_LENGTH,
+                                0}, .current_rotation = {0}},
 };
 
 /* Strings for loading and storing shader code */
@@ -106,18 +106,12 @@ GLuint ShaderProgram;
 /* Matrices for uniform variables in vertex shader */
 float ProjectionMatrix[16];             /* Perspective projection matrix */
 float ViewMatrix[16];                   /* Camera view matrix */
-float ModelMatrix[nbObjects][16];       /* Array of model matrix */
 
-
-/* Rotation matrices */
-float RotationMatrixAnimX[16];
-float RotationMatrixAnimY[16];
-float RotationMatrixAnimZ[16];
-float RotationMatrixAnim[16];
-
-/* Variables for storing current rotation angles */
-float angleX, angleY, angleZ = 0.0f;
-
+/* Own rotation matrices for each object */
+float RotationMatrixAnimX[nbObjects][16];
+float RotationMatrixAnimY[nbObjects][16];
+float RotationMatrixAnimZ[nbObjects][16];
+float RotationMatrixAnim[nbObjects][16];
 
 /* Reference time for animation */
 double oldTime = 0;
@@ -129,7 +123,7 @@ double oldTime = 0;
 *
 * createCubeMesh
 *
-* This function creates a cube mesh and fill buffer objects with
+* This function creates a cube mesh and fills buffer objects with
 * the geometry.
 *
 *******************************************************************/
@@ -244,11 +238,10 @@ void Display() {
 
         GLint RotationUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
         if (RotationUniform == -1) {
-            fprintf(stderr, "Could not bind uniform ModelMatrix\n");
+            fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", i);
             exit(-1);
         }
-        glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, ModelMatrix[i]);
-
+        glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, cuboids[i].model);
 
         /* Bind VAO of the current object */
         glBindVertexArray(cuboids[0].VAO);
@@ -261,6 +254,66 @@ void Display() {
     glfwSwapBuffers(window);
 }
 
+void getCuboidPosition(Cuboid *cuboid, float angle, float result[3]) {
+    result[0] = cuboid->distance * sinf(angle);
+    result[1] = 0;
+    result[2] = cuboid->distance * cosf(angle);
+
+    // for cuboids with an inclined "orbit":
+    if (cuboid->rotation_angle != 0) {
+        result[0] = (result[0] * cosf(cuboid->rotation_angle)) - (result[1] * sinf(cuboid->rotation_angle));
+        result[1] = (result[0] * sinf(cuboid->rotation_angle)) + (result[1] * cosf(cuboid->rotation_angle));
+        result[2] = result[2];
+    }
+}
+
+/******************************************************************
+ * updateBottom
+ *******************************************************************/
+void updateBottom(Cuboid *cuboid) {
+    SetIdentityMatrix(cuboid->transformation);
+    SetIdentityMatrix(cuboid->model);
+
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + 0.0f, 360.0);
+    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
+
+    SetIdentityMatrix(cuboid->transformation);
+    MultiplyMatrix(RotationMatrixAnimY[cuboid->id], cuboid->transformation, cuboid->transformation);
+
+    MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id], cuboid->model);
+    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
+}
+
+/******************************************************************
+ * updateLimb
+ * This function updates the limb's position, movement etc.
+ * for every time unit
+ *******************************************************************/
+
+void updateLimb(Cuboid *cuboid, double delta) {
+
+    SetIdentityMatrix(cuboid->transformation);
+
+    if (cuboid->parent_id != 0) {
+        MultiplyMatrix(cuboid->transformation, cuboids[cuboid->parent_id].transformation, cuboid->transformation);
+    }
+    // 1. Initiate rotation around Y axis for all objects
+    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + delta * 20.0f, 360.0);
+    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
+
+    // Multiply all three rotation matrices
+    MultiplyMatrix(RotationMatrixAnimX[cuboid->id], RotationMatrixAnimY[cuboid->id], RotationMatrixAnim[cuboid->id]);
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], RotationMatrixAnimZ[cuboid->id], RotationMatrixAnim[cuboid->id]);
+
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], cuboid->transformation, cuboid->transformation);
+
+    // 2. Add Scaling to the transformation matrix
+    MultiplyMatrix(cuboid->transformation, scales[cuboid->id], cuboid->transformation);
+
+    // 3. Add Translation to the transformation matrix
+    MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
+    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
+}
 
 /******************************************************************
 *
@@ -277,22 +330,10 @@ void OnIdle() {
     double delta = newTime - oldTime;
     oldTime = newTime;
 
-    if (anim) {
-        /* Increment rotation angle and update matrix */
-        angleY = fmod(angleY + delta * 20.0f, 360.0);
-        SetRotationY(angleY, RotationMatrixAnimY);
-    }
-
-
-    /* Update of transformation matrices
-     * Note order of transformations and rotation of reference axes */
-    MultiplyMatrix(RotationMatrixAnimX, RotationMatrixAnimY, RotationMatrixAnim);
-    MultiplyMatrix(RotationMatrixAnim, RotationMatrixAnimZ, RotationMatrixAnim);
-
     /* Apply scaling and translation to Model Matrices */
-    for (int i = 0; i < nbObjects; i++) {
-        MultiplyMatrix(RotationMatrixAnim, translations[i], ModelMatrix[i]);
-        MultiplyMatrix(ModelMatrix[i], scales[i], ModelMatrix[i]);
+    updateBottom(&cuboids[0]);
+    for (int i = 1; i < nbObjects; i++) {
+        updateLimb(&cuboids[i], anim ? delta : 0);
     }
 }
 
@@ -305,7 +346,7 @@ void OnIdle() {
 *
 *******************************************************************/
 
-void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) {
+void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType) {
     /* Create shader object */
     GLuint ShaderObj = glCreateShader(ShaderType);
 
@@ -315,7 +356,7 @@ void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) 
     }
 
     /* Associate shader source code string with shader object */
-    glShaderSource(ShaderObj, 1, &ShaderCode, NULL);
+    glShaderSource(ShaderObj, 1, &ShaderCode, nullptr);
 
     GLint success = 0;
     GLchar InfoLog[1024];
@@ -325,13 +366,13 @@ void AddShader(GLuint ShaderProgram, const char *ShaderCode, GLenum ShaderType) 
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-        glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
+        glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
     }
 
     /* Associate shader with shader program */
-    glAttachShader(ShaderProgram, ShaderObj);
+    glAttachShader(UsedShaderProgram, ShaderObj);
 }
 
 
@@ -372,7 +413,7 @@ void CreateShaderProgram() {
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
 
     if (Success == 0) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -382,7 +423,7 @@ void CreateShaderProgram() {
     glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
 
     if (!Success) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -405,7 +446,7 @@ void CreateShaderProgram() {
 
 void Initialize() {
 
-    /* Create 3 cube meshes */
+    /* Create cube meshes */
     for (int i = 0; i < nbObjects; i++) {
         GLuint *vbo = &cuboids[i].VBO;
         createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
@@ -431,21 +472,24 @@ void Initialize() {
 
     for (int i = 0; i < nbObjects; i++) {
         /* Initialize scale matrices */
-        SetScaleMatrix(cuboids[i].scale.scale_x, cuboids[i].scale.scale_y, cuboids[i].scale.scale_z, scales[i]);
+        SetScaleMatrix(cuboids[i].scale[0], cuboids[i].scale[1], cuboids[i].scale[2], scales[i]);
 
         /* Initialize Translation matrices */
-        SetTranslation(cuboids[i].translation.translation_x, cuboids[i].translation.translation_y,
-                       cuboids[i].translation.translation_z, translations[i]);
+        SetTranslation(cuboids[i].translation[0], cuboids[i].translation[1],
+                       cuboids[i].translation[2], translations[i]);
 
         /* Initialize model matrices */
-        SetIdentityMatrix(ModelMatrix[i]);
+        SetIdentityMatrix(cuboids[i].model);
     }
 
     /* Initialize animation matrices */
-    SetIdentityMatrix(RotationMatrixAnimX);
-    SetIdentityMatrix(RotationMatrixAnimY);
-    SetIdentityMatrix(RotationMatrixAnimZ);
-    SetIdentityMatrix(RotationMatrixAnim);
+    for (int i = 0; i < nbObjects; i++) {
+        SetIdentityMatrix(RotationMatrixAnimX[i]);
+        SetIdentityMatrix(RotationMatrixAnimY[i]);
+        SetIdentityMatrix(RotationMatrixAnimZ[i]);
+        SetIdentityMatrix(RotationMatrixAnim[i]);
+    }
+
 
     /* Set projection transform */
     float aspect = winWidth / winHeight;
