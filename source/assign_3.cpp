@@ -1,6 +1,6 @@
 /******************************************************************
 *
-* assign_1.cpp  
+* assign_1.cpp
 *
 * Interactive Graphics and Simulation Group
 * Institute of Computer Science
@@ -116,6 +116,48 @@ float RotationMatrixAnim[nbObjects][16];
 /* Reference time for animation */
 double oldTime = 0;
 
+
+typedef struct keyboard {
+    int up;
+    int down;
+    int left;
+    int right;
+} KeyboardState;
+
+KeyboardState keyboard = {
+    .up = 0,
+    .down = 0,
+    .left = 0,
+    .right = 0,
+};
+
+
+// 0: camera, 1-3: limb
+int currentLimb = 0;
+
+void KeyboardUp(unsigned char key, int x, int y) {
+    switch (key) {
+        case 'w':
+            keyboard.up = 0;
+            break;
+        case 's':
+            keyboard.down = 0;
+            break;
+        case 'a': // left
+            keyboard.left = 0;
+            break;
+        case 'd': // right
+            keyboard.right = 0;
+            break;
+    }
+}
+
+void Keyboard(unsigned char key, int x, int y)
+{
+}
+
+
+
 /*----------------------------------------------------------------*/
 
 
@@ -206,7 +248,7 @@ void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
 *
 * This function is called when the content of the window needs to be
 * drawn/redrawn. It has been specified through 'glutDisplayFunc()';
-* Enable vertex attributes, create binding between C program and 
+* Enable vertex attributes, create binding between C program and
 * attribute name in shader, provide data for uniform variables
 *
 *******************************************************************/
@@ -320,7 +362,7 @@ void updateLimb(Cuboid *cuboid, double delta) {
 * OnIdle
 *
 * Function executed when no other events are processed; set by
-* call to glutIdleFunc(); holds code for animation  
+* call to glutIdleFunc(); holds code for animation
 *
 *******************************************************************/
 
@@ -333,7 +375,9 @@ void OnIdle() {
     /* Apply scaling and translation to Model Matrices */
     updateBottom(&cuboids[0]);
     for (int i = 1; i < nbObjects; i++) {
-        updateLimb(&cuboids[i], anim ? delta : 0);
+        if (currentLimb == i) {
+            updateLimb(&cuboids[i], anim ? delta : 0);
+        }
     }
 }
 
@@ -382,7 +426,7 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 *
 * This function creates the shader program; vertex and fragment
 * shaders are loaded and linked into program; final shader program
-* is put into the rendering pipeline 
+* is put into the rendering pipeline
 *
 *******************************************************************/
 
@@ -533,17 +577,30 @@ void Resize(GLFWwindow *window, int width, int height) {
 *******************************************************************/
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
-    /* when key "Q" is pressed */
-    if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-        std::cout << "Q key pressed" << std::endl;
-        /* activate/deactivate idle rotation */
-        anim = !anim;
+    switch(key)
+    {
+        case GLFW_KEY_W: // forwards
+            keyboard.up = action == GLFW_PRESS;
+            break;
+        case GLFW_KEY_S: // backwards
+            keyboard.down = action == GLFW_PRESS;
+            break;
+        case GLFW_KEY_A: // left
+            keyboard.left = action == GLFW_PRESS;
+            break;
+        case GLFW_KEY_D: // right
+            keyboard.right = action == GLFW_PRESS;
+            break;
+        case GLFW_KEY_1: case GLFW_KEY_2: case GLFW_KEY_3: case GLFW_KEY_0:
+            currentLimb = key - 48; // GLFW_KEY_0 = 48
+            break;
+        case GLFW_KEY_Q:
+            if (action == GLFW_PRESS) {
+                std::cout << "Bye!" << std::endl;
+                exit(0);
+            }
     }
-
-    /* when key "W" is maintained pressed */
-    if (key == GLFW_KEY_W && action == GLFW_REPEAT) {
-        std::cout << "W key repeat" << std::endl;
-    }
+    std::cout << "current limb: " << currentLimb << std::endl;
 
 }
 
