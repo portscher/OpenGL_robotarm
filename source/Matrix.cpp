@@ -283,3 +283,40 @@ void CrossProduct(float* a, float* b, float* result)
 
     memcpy(result, crossProduct, 3 * sizeof(float));
 }
+
+/**
+ * @brief Normalizes the given vector.
+ * 
+ * @param vector The vector that should be normalized.
+ * @param vectorSize The size of the vector.
+ * @param result The array that represents the normalized vector.
+ */
+void NormalizeVector(float* vector, int vectorSize, float* result)
+{
+    double sum; 
+    for(int i = 0; i < vectorSize; i++)
+    {
+        sum += pow(vector[i], 2);
+    }
+
+    float length = sqrt(sum);
+    float normalized[vectorSize];
+    for(int i = 0; i < vectorSize; i++)
+    {
+        normalized[i] = vector[i] / length;
+    }
+
+    memcpy(result, normalized, vectorSize * sizeof(float));
+}
+
+/**
+ * @brief Converts the given angle in degree to radian.
+ * 
+ * @param degree The degree in degree to convert.
+ * @return float The angle in radian.
+ */
+float ToRadian(float angle)
+{
+    float radian = ((M_PI / 180) * angle);
+    return radian;
+}

@@ -26,5 +26,7 @@ void ScalarMultiplication(float scalar, float* vector, int vectorSize, float* re
 void Add(float* a, float* b, int matrixSize, float* result);
 void Substract(float* a, float* b, int matrixSize, float* result);
 void CrossProduct(float* a, float* b, float* result);
+void NormalizeVector(float* vector, int vectorSize, float* result);
+float ToRadian(float angle);
 
 #endif // __MATRIX_H__

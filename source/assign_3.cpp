@@ -25,6 +25,9 @@
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
 
+void UpdateCameraView(int);
+void LookAt(float*, float*, float*, float*);
+
 /* Number of objects in the scene */
 #define nbObjects 4
 /*----------------------------------------------------------------*/
@@ -397,9 +400,9 @@ void OnIdle() {
     /* Apply scaling and translation to Model Matrices */
     updateBottom(&cuboids[0]);
     for (int i = 1; i < nbObjects; i++) {
-        if (currentLimb == i) {
+        // if (currentLimb == i) {
             updateLimb(&cuboids[i], anim ? delta : 0);
-        }
+        // }
     }
 }
 
@@ -569,6 +572,7 @@ void Initialize() {
     SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
     MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
 
+    UpdateCameraView(0);
 }
 
 
@@ -639,6 +643,10 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     std::cout << "scrolling Y offest = " << yoffset << std::endl;
 }
 
+/**
+ * @brief Updates the position of the camera object.
+ * 
+ */
 void UpdateCameraPosition() {
     float cameraSpeed = .2;
     float temp[3];
@@ -657,9 +665,73 @@ void UpdateCameraPosition() {
     if (keyboard.left)
     {
         CrossProduct(cam.front, cam.up, temp);
+        NormalizeVector(temp, 3, temp);
+        ScalarMultiplication(cameraSpeed * 0.8, temp, 3, temp);
+        Substract(cam.currentPosition, temp, 3, cam.currentPosition);
+    }
+
+    if (keyboard.right)
+    {
+        CrossProduct(cam.front, cam.up, temp);
+        NormalizeVector(temp, 3, temp);
+        ScalarMultiplication(cameraSpeed * 0.8, temp, 3, temp);
+        Add(cam.currentPosition, temp, 3, cam.currentPosition);
     }
 }
 
+void UpdateCameraView(int delta)
+{
+    float target[3];
+    UpdateCameraPosition();
+    cam.front[0] = cos(ToRadian(cam.xAngle)) * sin(ToRadian(cam.yAngle));
+    cam.front[1] = sin(ToRadian(cam.xAngle));
+    cam.front[2] = cos(ToRadian(cam.xAngle)) * sin(ToRadian(cam.yAngle));
+    NormalizeVector(cam.front, 3, cam.front);
+    Add(cam.currentPosition, cam.front, 3, target);
+
+    LookAt(cam.currentPosition, target, cam.up, cam.viewMatrix);
+
+    float aspect = winWidth / winHeight;
+    float nearPlane = 1.0;
+    float farPlane = 50.0;
+    SetPerspectiveMatrix(cam.fieldOfView, aspect, nearPlane, farPlane, cam.projectionMatrix);
+}
+
+/**
+ * @brief Calculates the view matrix of the camera.
+ * 
+ * @param position The current position of the camera.
+ * @param target The target to which the camera is pointing.
+ * @param upVector The up vector of the camera.
+ * @param result The resulting view matrix.
+ */
+void LookAt(float* position, float* target, float* upVector, float* result)
+{
+    float direction[3];
+    Substract(position, target, 3, direction);
+    NormalizeVector(direction, 3, direction);
+
+    float right[3];
+    CrossProduct(upVector, direction, right);
+    NormalizeVector(right, 3, right);
+
+    float up[3];
+    CrossProduct(direction, right, up);
+
+    float temp[16] =
+    {
+        right[0], right[1], right[2], 0.0,
+        up[0], up[1], up[2], 0.0,
+        direction[0], direction[1], direction[2], 0.0,
+        0.0, 0.0, 0.0, 1.0
+    };
+
+    float t[16];
+    SetTranslation(-position[0], -position[1], -position[2], t);
+    MultiplyMatrix(temp, t, temp);
+    
+    memcpy(result, temp, 16 * sizeof(float));
+}
 
 /******************************************************************
 *
