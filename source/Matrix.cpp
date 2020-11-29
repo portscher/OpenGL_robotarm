@@ -276,9 +276,9 @@ void CrossProduct(float* a, float* b, float* result)
 {
     float crossProduct[3] =
     {
-        (a[2] * b[3]) - (a[3] * b[2]),
-        (a[3] * b[1]) - (a[1] * b[3]),
         (a[1] * b[2]) - (a[2] * b[1]),
+        (a[2] * b[0]) - (a[0] * b[2]),
+        (a[0] * b[1]) - (a[1] * b[0]),
     };
 
     memcpy(result, crossProduct, 3 * sizeof(float));
@@ -293,7 +293,7 @@ void CrossProduct(float* a, float* b, float* result)
  */
 void NormalizeVector(float* vector, int vectorSize, float* result)
 {
-    double sum; 
+    double sum = 0; 
     for(int i = 0; i < vectorSize; i++)
     {
         sum += pow(vector[i], 2);
