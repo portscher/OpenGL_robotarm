@@ -18,9 +18,9 @@ private:
     int ID;
     GLint VAO;
 
-    int rotationX;
-    int rotationY;
-    int rotationZ;
+    float rotationX;
+    float rotationY;
+    float rotationZ;
 
     int angle;
 
@@ -38,7 +38,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, float position[3], float size[2]);
+    Limb(int ID, const float position[3], float size[2]);
 
     void setRotation(int axis, float deg);
     float getRotation(int axis);

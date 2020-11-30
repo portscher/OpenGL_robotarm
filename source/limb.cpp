@@ -1,9 +1,14 @@
 #include "limb.hpp"
 
-Limb::Limb(int _ID, float _position[3], float size[2]) :
-        internal{0}, transformation{0}, model{0},
+/******************************************************************
+*
+* Constructs a limb using the
+*
+*******************************************************************/
+Limb::Limb(int _ID, const float _position[3], float size[2]) :
         rotationX(0), rotationY(0), rotationZ(0),
-        width(size[0]), length(size[1]), position{0} {
+        position{0}, length(size[1]), width(size[0]),
+        internal{0}, transformation{0}, model{0} {
 
     ID = _ID;
     VAO = createCubeMesh(width, length);
@@ -35,10 +40,11 @@ void Limb::setRotation(int axis, float deg) {
             rotationZ = deg;
             break;
         default:
-            cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. "<< endl;
+            cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. " << endl;
     }
 }
 
+/** Returns the rotation angle around a given axis */
 float Limb::getRotation(int axis) {
     switch (axis) {
         case 0:
@@ -48,7 +54,6 @@ float Limb::getRotation(int axis) {
         case 2:
             return rotationZ;
         default:
-            // TODO throw exception?
             cout << "getRotation on " << ID << " cant return a value" << endl;
             return 0;
     }
@@ -58,20 +63,27 @@ void Limb::setAngle(int deg) {
     angle = deg;
 }
 
+/** Returns the transformation matrix of a limb */
 void Limb::getTransformation(float *result) {
     memcpy(result, transformation, 16 * sizeof(float));
 }
 
+/******************************************************************
+*
+* update - updates a limb, taking into account the transformation
+* of the parent limb
+*
+* parentTransform = transformation matrix of the parent limb
+*******************************************************************/
 void Limb::update(float *parentTransform) {
-    // 0. reset transformations
+    // reset transformations
     SetIdentityMatrix(model);
     SetIdentityMatrix(transformation);
-
 
     float result[16];
     SetIdentityMatrix(result);
 
-    // 2. move to base
+    // move to base
     float pos[16];
     SetTranslation(position[0], position[1], position[2], pos);
 
