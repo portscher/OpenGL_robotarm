@@ -1,26 +1,29 @@
 #include "limb.hpp"
 
-Limb::Limb(int _ID, float position[3], float size[3]) :
+Limb::Limb(int _ID, float _position[3], float size[2]) :
     internal{0}, transformation{0}, model{0},
-    rotationX(0), rotationY(0), rotationZ(0)
+    rotationX(0), rotationY(0), rotationZ(0),
+    width(size[0]), length(size[1]), position{0}
 {
     ID = _ID;
-    VAO = createCubeMesh();
+    VAO = createCubeMesh(width, length);
 
-    // SetIdentityMatrix(internal);
-    // SetIdentityMatrix(transformation);
+    SetIdentityMatrix(internal);
+    SetIdentityMatrix(transformation);
     SetIdentityMatrix(model);
-
-    SetScaleMatrix(size[0], size[1], size[2], internal);
+    // WTH? anyways.. it works
+    position[0] = _position[0];
+    position[1] = _position[1];
+    position[2] = _position[2];
 }
 
 float Limb::offset() {
-    return _offset;
+    return length;
 }
 
 // TODO axis could be an enum
 void Limb::setRotation(int axis, float grad) {
-    cout << "updating rotation axis " << axis << " to " << grad << endl;
+    // cout << "updating rotation axis " << axis << " to " << grad << endl;
     switch (axis) {
         case 0:
             rotationX = grad;
@@ -58,47 +61,35 @@ void Limb::getTransformation(float *result) {
 }
 
 void Limb::update(float *parentTransform) {
-    // // SetIdentityMatrix(transformation);
-    // SetIdentityMatrix(model);
-    //
+    // 0. reset transformations
+    SetIdentityMatrix(model);
+    SetIdentityMatrix(transformation);
 
-    SetTranslation(position[0], position[1], position[2], transformation);
-    // // 1. Initiate rotation around Y axis for all objects
+
+
+    float result[16];
+    SetIdentityMatrix(result);
+
+    // 2. move to base
+    float pos[16];
+    SetTranslation(position[0], position[1], position[2], pos);
+
     float rot[16];
-    SetRotationX(rotationX, rot);
-    MultiplyMatrix(transformation, rot, transformation);
-
     SetRotationY(rotationY, rot);
-    MultiplyMatrix(transformation, rot, transformation);
+    MultiplyMatrix(result, rot, result);
+
+    SetRotationX(rotationX, rot);
+    MultiplyMatrix(result, rot, result);
 
     SetRotationZ(rotationZ, rot);
-    MultiplyMatrix(transformation, rot, transformation);
+    MultiplyMatrix(result, rot, result);
 
-    // Multiply all three rotation matrices
-    // MultiplyMatrix(RotationMatrixAnimX[cuboid->id], RotationMatrixAnimY[cuboid->id], RotationMatrixAnim[cuboid->id]);
-    // MultiplyMatrix(RotationMatrixAnim[cuboid->id], RotationMatrixAnimZ[cuboid->id], RotationMatrixAnim[cuboid->id]);
+    MultiplyMatrix(result, rot, result);
 
-    // MultiplyMatrix(RotationMatrixAnim[cuboid->id], cuboid->transformation, cuboid->transformation);
-    //
-    // // 2. Add Scaling to the transformation matrix
-    // // MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id], cuboid->transformation);
-    // // MultiplyMatrix(cuboid->transformation, translations[cuboid->id],              cuboid->transformation);
-    // // MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id],       cuboid->transformation);
-    // MultiplyMatrix(cuboid->transformation, scales[cuboid->id],              cuboid->transformation);
-    //
-    // // 3. Add Translation to the transformation matrix
-    // MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
-    // // MultiplyMatrix(cuboid->model, translations[cuboid->id], cuboid->model);
-    // // MultiplyMatrix(cuboid->model, RotationMatrixAnim[cuboid->id], cuboid->model);
-    // MultiplyMatrix(transformation, internal, model);
-
-    // MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
-    // MultiplyMatrix(model, internal, model);
-    // MultiplyMatrix(model, transformation, model);
-    MultiplyMatrix(parentTransform, transformation, transformation);
-
-    MultiplyMatrix(transformation, internal, model);
-
+    MultiplyMatrix(result, model, model);
+    MultiplyMatrix(pos, model, model);
+    MultiplyMatrix(parentTransform, model, model);
+    MultiplyMatrix(transformation, model, transformation);
 }
 
 void Limb::display(GLint ShaderProgram) {

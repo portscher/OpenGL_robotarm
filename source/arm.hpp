@@ -20,7 +20,7 @@ private:
 
 public:
     Arm();
-    void addLimb(float width, float height, float depth);
+    void addLimb(float width, float height);
     void update(KeyboardState *state);
     void display(GLint ShaderProgram);
     Limb getLimb(int index);

@@ -24,8 +24,8 @@ GLFWwindow *window;
 
 GLuint defaultVAO;
 
-const float THICKNESS = 0.3f;
-const float FIRST_LIMB_HEIGHT = 2.5f;
+const float THICKNESS = .4;
+const float FIRST_LIMB_HEIGHT = 1.5f;
 const float SECOND_LIMB_LENGTH = 1.5f;
 const float THIRD_LIMB_LENGTH = 1.0f;
 
@@ -178,8 +178,6 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         exit(0);
     }
 
-    cout << "current limb: " << keyboard.currentLimb << endl;
-
 }
 
 
@@ -238,8 +236,8 @@ int main(int argc, char **argv) {
     Initialize();
 
     Arm arm;
-    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, THICKNESS);
-    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH, THICKNESS);
+    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT);
+    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {

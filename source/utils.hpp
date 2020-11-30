@@ -22,7 +22,7 @@ typedef struct keyboard {
     int currentLimb;
 } KeyboardState;
 
-GLuint createCubeMesh();
+GLuint createCubeMesh(float width, float height);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 

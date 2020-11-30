@@ -35,7 +35,7 @@ private:
     float _offset; // for now, it is only the y-offset
 
     float position[3];
-    float legth;
+    float length;
     float width;
 
     // internal is used for internal transformations like scale
@@ -45,7 +45,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, float position[3], float size[3]);
+    Limb(int ID, float position[3], float size[2]);
 
     void setRotation(int axis, float grad);
     float getRotation(int axis);

@@ -3,27 +3,31 @@
 Arm::Arm() :
     internal{0}, height(.25), width(2.5) {
     // base
-    VAO = createCubeMesh();
+    VAO = createCubeMesh(width, height);
     SetIdentityMatrix(internal);
-
-    // internal tranformations
-    SetScaleMatrix(width, height, width, internal);
 }
 
-void Arm::addLimb(float width, float height, float depth) {
+void Arm::addLimb(float w, float h) {
     int currentIndex = limbs.size() - 1;
 
     // calculate offset to floor
-    float offset = height;
+    float offset = 0;
     for (auto l : limbs) {
-        offset += l->offset();
+        offset += l->offset(); // HEHERE
+    }
+
+    float center = 0;
+    if (limbs.size() == 0) {
+        center = width/2;
+        offset += height;
     }
 
     cout << "creating limb: " <<
-        "(x, y, z): " << width/2 << ", " << offset << ", 0" <<
-        "(w, h)" << width << ", " << height << endl;
-    float pos[] = {width/2, offset, 0.};
-    float size[] = {width, height, depth};
+        "(x, y, z): " << center << ", " << offset << ", 0" <<
+        "(w, h)" << w << ", " << h << endl;
+
+    float pos[] = {center, offset, center};
+    float size[] = {w, h};
     limbs.push_back(new Limb(currentIndex, pos, size));
 }
 void Arm::update(KeyboardState *state) {
@@ -49,8 +53,6 @@ void Arm::update(KeyboardState *state) {
 
         if (i > 0) { // update only children of the first limb
             limbs.at(i-1)->getTransformation(transformation);
-            cout << "got tranformation from " << i-1 << endl;
-            printMatrix(transformation);
         }
 
         limbs.at(i)->update(transformation);
@@ -64,7 +66,7 @@ void Arm::display(GLint ShaderProgram) {
     // TODO this is actually the transformation
     GLint ModelUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
     if (ModelUniform == -1) {
-        fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n");
+        fprintf(stderr, "Could not bind uniform Model Matrix for cuboid.\n");
         exit(-1);
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, internal);

@@ -9,22 +9,23 @@
 * the geometry.
 *
 *******************************************************************/
-// TODO should return a already resized cube
-GLuint createCubeMesh() {
+GLuint createCubeMesh(float width, float height) {
     GLuint VAO;
     GLuint VBO;
     GLuint IBO;
     GLuint CBO;
 
+    float depth = width;
     GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            -1.0, -1.0, 1.0,
-            1.0, -1.0, 1.0,
-            1.0, 1.0, 1.0,
-            -1.0, 1.0, 1.0,
-            -1.0, -1.0, -1.0,
-            1.0, -1.0, -1.0,
-            1.0, 1.0, -1.0,
-            -1.0, 1.0, -1.0,
+            0.,     0.,     depth,
+            width,  0.,     depth,
+            width,  height, depth,
+            0.,     height, depth,
+
+            0.,     0.,     0.,
+            width,  0.,     0.,
+            width,  height, 0.,
+            0.,     height, 0.,
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
