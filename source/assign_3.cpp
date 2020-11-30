@@ -26,6 +26,7 @@
 #include "Matrix.h"        /* Functions for matrix handling */
 #include "arm.hpp"
 #include "utils.hpp"
+#include "camera.hpp"
 
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -205,106 +206,6 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     std::cout << "scrolling Y offest = " << yoffset << std::endl;
 }
 
-/**
- * @brief Updates the position of the camera object.
- * 
- */
-void UpdateCameraPosition() {
-    float cameraSpeed = 0.2;
-    float temp[3];
-    if (keyboard.up)
-    {
-        ScalarMultiplication(cameraSpeed, cam.front, 3, temp);
-        Add(cam.currentPosition, temp, 3, cam.currentPosition);
-    }
-
-    if (keyboard.down)
-    {
-        ScalarMultiplication(cameraSpeed, cam.front, 3, temp);
-        Substract(cam.currentPosition, temp, 3, cam.currentPosition);
-    }
-
-    if (keyboard.left)
-    {
-        CrossProduct(cam.front, cam.up, temp);
-        NormalizeVector(temp, 3, temp);
-        ScalarMultiplication(cameraSpeed * 0.8, temp, 3, temp);
-        Substract(cam.currentPosition, temp, 3, cam.currentPosition);
-    }
-
-    if (keyboard.right)
-    {
-        CrossProduct(cam.front, cam.up, temp);
-        NormalizeVector(temp, 3, temp);
-        ScalarMultiplication(cameraSpeed * 0.8, temp, 3, temp);
-        Add(cam.currentPosition, temp, 3, cam.currentPosition);
-    }
-}
-
-void UpdateCameraView()
-{
-    float target[3];
-    UpdateCameraPosition();
-    cam.front[0] = cos(ToRadian(cam.xAngle)) * sin(ToRadian(cam.yAngle));
-    cam.front[1] = sin(ToRadian(cam.xAngle));
-    cam.front[2] = cos(ToRadian(cam.xAngle)) * sin(ToRadian(cam.yAngle));
-    NormalizeVector(cam.front, 3, cam.front);
-    Add(cam.currentPosition, cam.front, 3, target);
-
-    printf("pos: [%g,%g, %g]\nfront: [%g, %g, %g]\nlookingat: [%g, %g, %g]\n",
-    cam.currentPosition[0], cam.currentPosition[1], cam.currentPosition[2],
-    cam.front[0], cam.front[1], cam.front[2],
-    target[0], target[1], target[2]);
-
-    LookAt(cam.currentPosition, target, cam.up, cam.viewMatrix);
-
-    float aspect = winWidth / winHeight;
-    float nearPlane = 1.0;
-    float farPlane = 50.0;
-    SetPerspectiveMatrix(cam.fieldOfView, aspect, nearPlane, farPlane, cam.projectionMatrix);
-}
-
-/**
- * @brief Calculates the view matrix of the camera.
- * 
- * @param position The current position of the camera.
- * @param target The target to which the camera is pointing.
- * @param upVector The up vector of the camera.
- * @param result The resulting view matrix.
- */
-void LookAt(float* position, float* target, float* upVector, float* result)
-{
-    float forward[3];
-    Substract(position, target, 3, forward);
-    NormalizeVector(forward, 3, forward);
-
-    float left[3];
-    CrossProduct(upVector, forward, left);
-    NormalizeVector(left, 3, left);
-
-    float up[3];
-    CrossProduct(forward, left, up);
-
-    float matrix[16];
-    SetIdentityMatrix(matrix);
-    
-    matrix[0] = left[0];
-    matrix[4] = left[1];
-    matrix[8] = left[2];
-    matrix[1] = up[0];
-    matrix[5] = up[1];
-    matrix[9] = up[2];
-    matrix[2] = forward[0];
-    matrix[6] = forward[1];
-    matrix[10] = forward[2];
-
-    matrix[12] = -left[0] * position[0] - left[1] * position[1] - left[2] * position[2];
-    matrix[13] = -up[0] * position[0] - up[1] * position[1] - up[2] * position[2];
-    matrix[14] = -forward[0] * position[0] - forward[1] * position[1] - forward[2] * position[2];
-
-    memcpy(result, matrix, 16 * sizeof(float));
-}
-
 /******************************************************************
 *
 * main
@@ -351,12 +252,16 @@ int main(int argc, char **argv) {
     arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
     arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
 
+    Camera camera;
+
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         /* Update scene */
         arm.update(&keyboard);
+
+        camera.UpdateView(&keyboard);
 
         /* Draw scene */
         Display(arm);
