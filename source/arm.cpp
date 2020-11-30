@@ -1,5 +1,10 @@
 #include "arm.hpp"
 
+/******************************************************************
+*
+* Constructs Arm (with static base)
+*
+*******************************************************************/
 Arm::Arm() :
     internal{0}, height(.25), width(2.5) {
     // base
@@ -7,6 +12,13 @@ Arm::Arm() :
     SetIdentityMatrix(internal);
 }
 
+/******************************************************************
+*
+* addLimb - adds a new limb to the arm
+*
+* w = width
+* h = height
+*******************************************************************/
 void Arm::addLimb(float w, float h) {
     int currentIndex = limbs.size() - 1;
 
@@ -20,13 +32,21 @@ void Arm::addLimb(float w, float h) {
     }
 
     cout << "creating limb: " <<
-        "(x, y, z): " << center << ", " << offset << ", 0" <<
-        "(w, h)" << w << ", " << h << endl;
+        "(x, y, z): " << center << ", " << offset << ", 0. " <<
+        "(w, h): " << w << ", " << h << endl;
 
     float pos[] = {center, offset, center};
     float size[] = {w, h};
     limbs.push_back(new Limb(currentIndex, pos, size));
 }
+
+/******************************************************************
+*
+* update - updates every limb according to the keyboard input
+*
+* state = keyboard state (up, down, left, right)
+*
+*******************************************************************/
 void Arm::update(KeyboardState *state) {
     for (int i = 0; i != limbs.size(); i++) {
         float transformation[16];

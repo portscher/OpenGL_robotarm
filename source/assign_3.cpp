@@ -21,9 +21,9 @@ GLFWwindow *window;
 GLuint defaultVAO;
 
 const float THICKNESS = .4;
-const float FIRST_LIMB_HEIGHT = 1.5f;
-const float SECOND_LIMB_LENGTH = 1.5f;
-const float THIRD_LIMB_LENGTH = 1.0f;
+const float FIRST_LIMB_HEIGHT = 2.5f;
+const float SECOND_LIMB_LENGTH = 2.5f;
+const float THIRD_LIMB_LENGTH = 2.0f;
 
 GLuint ShaderProgram;
 
@@ -122,7 +122,7 @@ void Initialize() {
 * This function is called when the window size is changed
 * to update the viewport dimension accordingly
 *
-* width, height = new dimesnion of the window after resize
+* width, height = new dimension of the window after resize
 *******************************************************************/
 
 void Resize(GLFWwindow *window, int width, int height) {

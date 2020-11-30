@@ -23,7 +23,7 @@ float Limb::offset() {
 
 // TODO axis could be an enum
 void Limb::setRotation(int axis, float deg) {
-    // cout << "updating rotation axis " << axis << " to " << deg << endl;
+    cout << "updating rotation axis " << axis << " to " << deg << endl;
     switch (axis) {
         case 0:
             rotationX = deg;
@@ -34,6 +34,8 @@ void Limb::setRotation(int axis, float deg) {
         case 2:
             rotationZ = deg;
             break;
+        default:
+            cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. "<< endl;
     }
 }
 
