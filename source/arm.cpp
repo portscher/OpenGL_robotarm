@@ -6,7 +6,7 @@
 *
 *******************************************************************/
 Arm::Arm() :
-    internal{0}, height(.25), width(2.5) {
+        internal{0}, height(.25), width(2.5) {
     // base
     VAO = createCubeMesh(width, height);
     SetIdentityMatrix(internal);
@@ -27,13 +27,13 @@ void Arm::addLimb(float w, float h) {
 
     float center = 0;
     if (limbs.empty()) {
-        center = width/2;
+        center = width / 2;
         offset = 0;
     }
 
     cout << "creating limb: " <<
-        "(x, y, z): " << center << ", " << offset << ", 0. " <<
-        "(w, h): " << w << ", " << h << endl;
+         "(x, y, z): " << center << ", " << offset << ", 0. " <<
+         "(w, h): " << w << ", " << h << endl;
 
     float pos[] = {center, offset, center};
     float size[] = {w, h};
@@ -48,11 +48,21 @@ void Arm::addLimb(float w, float h) {
 *
 *******************************************************************/
 void Arm::update(KeyboardState *state) {
+    // reset the arm to its initial position (all straight)
+    if (state->reset) {
+        for (auto & limb : limbs) {
+            for (int k = 0; k < 3; k++) {
+                limb->setRotation(k, 0);
+            }
+        }
+    }
+
     for (int i = 0; i != limbs.size(); i++) {
         float transformation[16];
         SetIdentityMatrix(transformation);
 
-        if (state->currentLimb != 0 && state->currentLimb-1 == i) {
+        // rotate along the axis chosen via keyboard
+        if (state->currentLimb != 0 && state->currentLimb - 1 == i) {
             if (state->up) {
                 float rot = limbs.at(i)->getRotation(0);
                 limbs.at(i)->setRotation(0, ++rot);
@@ -69,7 +79,7 @@ void Arm::update(KeyboardState *state) {
         }
 
         if (i > 0) { // update only children of the first limb
-            limbs.at(i-1)->getTransformation(transformation);
+            limbs.at(i - 1)->getTransformation(transformation);
         }
 
         limbs.at(i)->update(transformation);

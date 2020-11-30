@@ -37,6 +37,7 @@ KeyboardState keyboard = {
         .left = 0,
         .right = 0,
         .currentLimb = 0,
+        .reset = 0
 };
 
 /******************************************************************
@@ -169,7 +170,14 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
                && action == GLFW_PRESS) {
         keyboard.currentLimb = key - 48; // GLFW_KEY_0 = 48
-    } else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+    } else if(key == GLFW_KEY_R) {
+        if (action == GLFW_PRESS) {
+            keyboard.reset = 1;
+        } else if (action == GLFW_RELEASE) {
+            keyboard.reset = 0;
+        }
+    }
+    else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
         std::cout << "Bye!" << std::endl;
         exit(0);
     }
