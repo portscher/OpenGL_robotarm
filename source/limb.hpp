@@ -2,6 +2,7 @@
 #define LIMB_H
 
 #include <stdlib.h>
+#include <string.h>
 #include <cstdio>
 #include <iostream>
 #include <GL/glew.h>
@@ -48,8 +49,9 @@ public:
 
     void setRotation(int axis, float grad);
     float getRotation(int axis);
+    void getTransformation(float *transformation);
     void setAngle(int grad);
-    void update();
+    void update(float *transformation);
     void display(GLint program);
     float offset();
 };

@@ -182,3 +182,13 @@ void CreateShaderProgram(GLuint ShaderProgram) {
     glUseProgram(ShaderProgram);
 }
 
+void printMatrix(float* mat)
+{
+    int i;
+    for(i = 0; i < 16; i++) {
+        if (fmod(i, 4) == 0) {
+            printf("\n");
+        }
+        printf("%g ", mat[i]);
+    }
+}

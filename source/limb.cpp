@@ -1,16 +1,4 @@
 #include "limb.hpp"
-#include "math.h"
-
-void printMatrix(float* mat)
-{
-    int i;
-    for(i = 0; i < 16; i++) {
-        if (fmod(i, 4) == 0) {
-            printf("\n");
-        }
-        printf("%g ", mat[i]);
-    }
-}
 
 Limb::Limb(int _ID, float position[3], float size[3]) :
     internal{0}, transformation{0}, model{0},
@@ -64,10 +52,16 @@ float Limb::getRotation(int axis) {
 void Limb::setAngle(int grad) {
     angle = grad;
 }
-void Limb::update() {
+
+void Limb::getTransformation(float *result) {
+    memcpy(result, transformation, 16*sizeof(float));
+}
+
+void Limb::update(float *parentTransform) {
     // // SetIdentityMatrix(transformation);
     // SetIdentityMatrix(model);
     //
+
     SetTranslation(position[0], position[1], position[2], transformation);
     // // 1. Initiate rotation around Y axis for all objects
     float rot[16];
@@ -101,6 +95,8 @@ void Limb::update() {
     // MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
     // MultiplyMatrix(model, internal, model);
     // MultiplyMatrix(model, transformation, model);
+    MultiplyMatrix(parentTransform, transformation, transformation);
+
     MultiplyMatrix(transformation, internal, model);
 
 }

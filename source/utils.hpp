@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <stdlib.h>
+#include "math.h"
 #include <cstdio>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -26,5 +27,7 @@ GLuint createCubeMesh();
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 
 void CreateShaderProgram(GLuint ShaderProgram);
+
+void printMatrix(float* mat);
 
 #endif /* UTILS_H */

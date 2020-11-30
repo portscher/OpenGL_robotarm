@@ -26,9 +26,11 @@ void Arm::addLimb(float width, float height, float depth) {
     float size[] = {width, height, depth};
     limbs.push_back(new Limb(currentIndex, pos, size));
 }
-
 void Arm::update(KeyboardState *state) {
     for (int i = 0; i != limbs.size(); i++) {
+        float transformation[16];
+        SetIdentityMatrix(transformation);
+
         if (state->currentLimb != 0 && state->currentLimb-1 == i) {
             if (state->up) {
                 float rot = limbs.at(i)->getRotation(0);
@@ -44,7 +46,14 @@ void Arm::update(KeyboardState *state) {
                 limbs.at(i)->setRotation(1, --rot);
             }
         }
-        limbs.at(i)->update();
+
+        if (i > 0) { // update only children of the first limb
+            limbs.at(i-1)->getTransformation(transformation);
+            cout << "got tranformation from " << i-1 << endl;
+            printMatrix(transformation);
+        }
+
+        limbs.at(i)->update(transformation);
     }
 }
 
