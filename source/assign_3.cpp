@@ -238,6 +238,7 @@ int main(int argc, char **argv) {
     Arm arm;
     arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT);
     arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
+    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {

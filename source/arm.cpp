@@ -10,16 +10,13 @@ Arm::Arm() :
 void Arm::addLimb(float w, float h) {
     int currentIndex = limbs.size() - 1;
 
-    // calculate offset to floor
-    float offset = 0;
-    for (auto l : limbs) {
-        offset += l->offset(); // HEHERE
-    }
+    // offset relative to previous limb
+    float offset = h;
 
     float center = 0;
-    if (limbs.size() == 0) {
+    if (limbs.empty()) {
         center = width/2;
-        offset += height;
+        offset = 0;
     }
 
     cout << "creating limb: " <<
