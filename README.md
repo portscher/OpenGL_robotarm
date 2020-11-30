@@ -27,4 +27,6 @@ Then use the following keys to move the chosen obect:
 - S - down
 - D - right
 
+Additional keyboard controls:
+- R - Reset to initial position
 - Q closes the window
