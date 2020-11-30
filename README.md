@@ -26,3 +26,5 @@ Then use the following keys to move the chosen obect:
 - A - left
 - S - down
 - D - right
+
+- Q closes the window
