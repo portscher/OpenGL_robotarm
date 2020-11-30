@@ -24,6 +24,8 @@
 /* Local includes */
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
+#include "arm.hpp"
+#include "utils.hpp"
 
 /* Number of objects in the scene */
 #define nbObjects 4
@@ -35,13 +37,6 @@ float winHeight = 800.0f;
 /* window */
 GLFWwindow *window;
 
-/* Flag for starting/stopping animation */
-GLboolean anim = GL_TRUE;
-
-/* Indices to vertex attributes; in this case position only */
-enum DataID {
-    vPosition = 0, vColor = 1
-};
 
 float scales[nbObjects][16];
 float translations[nbObjects][16];
@@ -76,20 +71,20 @@ const float THIRD_LIMB_LENGTH = 1.0f;
 
 Cuboid cuboids[nbObjects] = {
         // bottom
-        {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale{2.5f, 0.25f, 2.5f},
+        {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale = {2.5f, 0.25f, 2.5f},
                 .translation = {0}, .current_rotation = {0}},
         // first limb
-        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {THICKNESS,
                                                                                                FIRST_LIMB_HEIGHT,
                                                                                                THICKNESS},
                 .translation = {0.0, FIRST_LIMB_Y_TRANSLATION, .0}, .current_rotation = {0}},
         // second limb
-        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{SECOND_LIMB_LENGTH,
+        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {SECOND_LIMB_LENGTH,
                                                                                                THICKNESS, THICKNESS},
                 .translation = {SECOND_LIMB_X_TRANSLATION, FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION,
                                 0}, .current_rotation = {0}, .rotation_angle = 90},
         // third limb
-        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale{THICKNESS,
+        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {THICKNESS,
                                                                                                THIRD_LIMB_LENGTH,
                                                                                                THICKNESS},
                 .translation = {SECOND_LIMB_LENGTH + 0.9f,
@@ -97,9 +92,6 @@ Cuboid cuboids[nbObjects] = {
                                 0}, .current_rotation = {0}},
 };
 
-/* Strings for loading and storing shader code */
-static const char *VertexShaderString;
-static const char *FragmentShaderString;
 
 GLuint ShaderProgram;
 
@@ -117,23 +109,14 @@ float RotationMatrixAnim[nbObjects][16];
 double oldTime = 0;
 
 
-typedef struct keyboard {
-    int up;
-    int down;
-    int left;
-    int right;
-} KeyboardState;
 
 KeyboardState keyboard = {
     .up = 0,
     .down = 0,
     .left = 0,
     .right = 0,
+    .currentLimb = 0,
 };
-
-
-// 0: camera, 1-3: limb
-int currentLimb = 0;
 
 void KeyboardUp(unsigned char key, int x, int y) {
     switch (key) {
@@ -161,86 +144,6 @@ void Keyboard(unsigned char key, int x, int y)
 /*----------------------------------------------------------------*/
 
 
-/******************************************************************
-*
-* createCubeMesh
-*
-* This function creates a cube mesh and fills buffer objects with
-* the geometry.
-*
-*******************************************************************/
-void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
-    GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            -1.0, -1.0, 1.0,
-            1.0, -1.0, 1.0,
-            1.0, 1.0, 1.0,
-            -1.0, 1.0, 1.0,
-            -1.0, -1.0, -1.0,
-            1.0, -1.0, -1.0,
-            1.0, 1.0, -1.0,
-            -1.0, 1.0, -1.0,
-    };
-
-    GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0,
-            1.0, 1.0, 1.0,
-            0.0, 1.0, 1.0,
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-    };
-
-    GLushort index_buffer_data[] = { /* Indices of 6*2 triangles (6 sides) */
-            0, 1, 2,
-            2, 3, 0,
-            1, 5, 6,
-            6, 2, 1,
-            7, 6, 5,
-            5, 4, 7,
-            4, 0, 3,
-            3, 7, 4,
-            4, 5, 1,
-            1, 0, 4,
-            3, 2, 6,
-            6, 7, 3,
-    };
-
-    /* Generate and write vertex buffer data */
-    glGenBuffers(1, VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate and write color buffer data */
-    glGenBuffers(1, CBO);
-    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color_buffer_data), color_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate and write index buffer data */
-    glGenBuffers(1, IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer_data), index_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
-    glGenVertexArrays(1, VAO);
-    glBindVertexArray(*VAO);
-    /* Bind buffer with vertex data of currently active object */
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glEnableVertexAttribArray(vPosition);
-    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Bind color buffer */
-    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
-    glEnableVertexAttribArray(vColor);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Bind index buffer */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
-
-    glBindVertexArray(defaultVAO);
-}
-
 
 /******************************************************************
 *
@@ -253,60 +156,49 @@ void createCubeMesh(GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *VAO) {
 *
 *******************************************************************/
 
-void Display() {
+void Display(Arm arm) {
     /* Clear window; color specified in 'Initialize()' */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /* For each object in the scene */
-    for (int i = 0; i < nbObjects; i++) {
-
-        GLint size;
-        glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-
-        /* Associate program with uniform shader matrices */
-        GLint projectionUniform = glGetUniformLocation(ShaderProgram, "ProjectionMatrix");
-        if (projectionUniform == -1) {
-            fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
-            exit(-1);
-        }
-        glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjectionMatrix);
-
-        GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
-        if (ViewUniform == -1) {
-            fprintf(stderr, "Could not bind uniform ViewMatrix\n");
-            exit(-1);
-        }
-        glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
-
-        GLint RotationUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
-        if (RotationUniform == -1) {
-            fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", i);
-            exit(-1);
-        }
-        glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, cuboids[i].model);
-
-        /* Bind VAO of the current object */
-        glBindVertexArray(cuboids[0].VAO);
-        /* Draw the data contained in the VAO */
-        glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
-
-        glBindVertexArray(defaultVAO);
+    /* Associate program with uniform shader matrices */
+    GLint projectionUniform = glGetUniformLocation(ShaderProgram, "ProjectionMatrix");
+    if (projectionUniform == -1) {
+        fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
+        exit(-1);
     }
+    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjectionMatrix);
+
+    GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
+    if (ViewUniform == -1) {
+        fprintf(stderr, "Could not bind uniform ViewMatrix\n");
+        exit(-1);
+    }
+    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
+
+    arm.display(ShaderProgram);
+
+    /* For each object in the scene */
+    // for (int i = 0; i < nbObjects; i++) {
+    //
+    //     GLint size;
+    //     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+    //
+    //     GLint RotationUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
+    //     if (RotationUniform == -1) {
+    //         fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", i);
+    //         exit(-1);
+    //     }
+    //     glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, cuboids[i].model);
+    //
+    //     /* Bind VAO of the current object */
+    //     glBindVertexArray(cuboids[0].VAO);
+    //     /* Draw the data contained in the VAO */
+    //     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
+    //
+    //     glBindVertexArray(defaultVAO);
+    // }
     /* Swap between front and back buffer */
     glfwSwapBuffers(window);
-}
-
-void getCuboidPosition(Cuboid *cuboid, float angle, float result[3]) {
-    result[0] = cuboid->distance * sinf(angle);
-    result[1] = 0;
-    result[2] = cuboid->distance * cosf(angle);
-
-    // for cuboids with an inclined "orbit":
-    if (cuboid->rotation_angle != 0) {
-        result[0] = (result[0] * cosf(cuboid->rotation_angle)) - (result[1] * sinf(cuboid->rotation_angle));
-        result[1] = (result[0] * sinf(cuboid->rotation_angle)) + (result[1] * cosf(cuboid->rotation_angle));
-        result[2] = result[2];
-    }
 }
 
 /******************************************************************
@@ -334,7 +226,10 @@ void updateBottom(Cuboid *cuboid) {
 
 void updateLimb(Cuboid *cuboid, double delta) {
 
+    float temp[16];
+    SetIdentityMatrix(temp);
     SetIdentityMatrix(cuboid->transformation);
+    // SetIdentityMatrix(cuboid->model);
 
     if (cuboid->parent_id != 0) {
         MultiplyMatrix(cuboid->transformation, cuboids[cuboid->parent_id].transformation, cuboid->transformation);
@@ -350,130 +245,16 @@ void updateLimb(Cuboid *cuboid, double delta) {
     MultiplyMatrix(RotationMatrixAnim[cuboid->id], cuboid->transformation, cuboid->transformation);
 
     // 2. Add Scaling to the transformation matrix
-    MultiplyMatrix(cuboid->transformation, scales[cuboid->id], cuboid->transformation);
+    // MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id], cuboid->transformation);
+    // MultiplyMatrix(cuboid->transformation, translations[cuboid->id],              cuboid->transformation);
+    // MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id],       cuboid->transformation);
+    MultiplyMatrix(cuboid->transformation, scales[cuboid->id],              cuboid->transformation);
 
     // 3. Add Translation to the transformation matrix
     MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
+    // MultiplyMatrix(cuboid->model, translations[cuboid->id], cuboid->model);
+    // MultiplyMatrix(cuboid->model, RotationMatrixAnim[cuboid->id], cuboid->model);
     MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
-}
-
-/******************************************************************
-*
-* OnIdle
-*
-* Function executed when no other events are processed; set by
-* call to glutIdleFunc(); holds code for animation
-*
-*******************************************************************/
-
-void OnIdle() {
-    /* Determine delta time between two frames to ensure constant animation */
-    double newTime = glfwGetTime();
-    double delta = newTime - oldTime;
-    oldTime = newTime;
-
-    /* Apply scaling and translation to Model Matrices */
-    updateBottom(&cuboids[0]);
-    for (int i = 1; i < nbObjects; i++) {
-        if (currentLimb == i) {
-            updateLimb(&cuboids[i], anim ? delta : 0);
-        }
-    }
-}
-
-
-/******************************************************************
-*
-* AddShader
-*
-* This function creates and adds individual shaders
-*
-*******************************************************************/
-
-void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType) {
-    /* Create shader object */
-    GLuint ShaderObj = glCreateShader(ShaderType);
-
-    if (ShaderObj == 0) {
-        fprintf(stderr, "Error creating shader type %d\n", ShaderType);
-        exit(0);
-    }
-
-    /* Associate shader source code string with shader object */
-    glShaderSource(ShaderObj, 1, &ShaderCode, nullptr);
-
-    GLint success = 0;
-    GLchar InfoLog[1024];
-
-    /* Compile shader source code */
-    glCompileShader(ShaderObj);
-    glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
-
-    if (!success) {
-        glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
-        fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
-        exit(1);
-    }
-
-    /* Associate shader with shader program */
-    glAttachShader(UsedShaderProgram, ShaderObj);
-}
-
-
-/******************************************************************
-*
-* CreateShaderProgram
-*
-* This function creates the shader program; vertex and fragment
-* shaders are loaded and linked into program; final shader program
-* is put into the rendering pipeline
-*
-*******************************************************************/
-
-void CreateShaderProgram() {
-    /* Allocate shader object */
-    ShaderProgram = glCreateProgram();
-
-    if (ShaderProgram == 0) {
-        fprintf(stderr, "Error creating shader program\n");
-        exit(1);
-    }
-
-    /* Load shader code from file */
-    VertexShaderString = LoadShader("../shaders/vertexshader.vs");
-    FragmentShaderString = LoadShader("../shaders/fragmentshader.fs");
-
-    /* Separately add vertex and fragment shader to program */
-    AddShader(ShaderProgram, VertexShaderString, GL_VERTEX_SHADER);
-    AddShader(ShaderProgram, FragmentShaderString, GL_FRAGMENT_SHADER);
-
-    GLint Success = 0;
-    GLchar ErrorLog[1024];
-
-    /* Link shader code into executable shader program */
-    glLinkProgram(ShaderProgram);
-
-    /* Check results of linking step */
-    glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
-
-    if (Success == 0) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
-        exit(1);
-    }
-
-    /* Check if shader program can be executed */
-    glValidateProgram(ShaderProgram);
-    glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
-
-    if (!Success) {
-        glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
-        exit(1);
-    }
-
-    /* Put linked shader program into drawing pipeline */
-    glUseProgram(ShaderProgram);
 }
 
 
@@ -487,14 +268,13 @@ void CreateShaderProgram() {
 * structures into vertex and index arrays
 *
 *******************************************************************/
-
 void Initialize() {
 
     /* Create cube meshes */
-    for (int i = 0; i < nbObjects; i++) {
-        GLuint *vbo = &cuboids[i].VBO;
-        createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
-    }
+    // for (int i = 0; i < nbObjects; i++) {
+    //     GLuint *vbo = &cuboids[i].VBO;
+    //     createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
+    // }
 
     /* Set background (clear) color to blue */
     glClearColor(0.0, 0.0, 0.4, 0.0);
@@ -505,15 +285,27 @@ void Initialize() {
 
 
     /* Setup shaders and shader program */
-    CreateShaderProgram();
+    ShaderProgram = glCreateProgram();
+    CreateShaderProgram(ShaderProgram);
 
 
-    /* Initialize matrices */
+    /* Initialize project/view matrices */
     SetIdentityMatrix(ProjectionMatrix);
     SetIdentityMatrix(ViewMatrix);
+
+    /* Set projection transform */
+    float aspect = winWidth / winHeight;
+    float nearPlane = 1.0;
+    float farPlane = 50.0;
+    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, ProjectionMatrix); /* build projection matrix */
+
+    /* Set viewing transform */
+    SetTranslation(0.0, -5.0, -20.0, ViewMatrix); /* translation of the camera */
+    float RotationMatrix[16];
+    SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
+    MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
+
     /* init scale matrix with a non-uniform scaling */
-
-
     for (int i = 0; i < nbObjects; i++) {
         /* Initialize scale matrices */
         SetScaleMatrix(cuboids[i].scale[0], cuboids[i].scale[1], cuboids[i].scale[2], scales[i]);
@@ -534,18 +326,6 @@ void Initialize() {
         SetIdentityMatrix(RotationMatrixAnim[i]);
     }
 
-
-    /* Set projection transform */
-    float aspect = winWidth / winHeight;
-    float nearPlane = 1.0;
-    float farPlane = 50.0;
-    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, ProjectionMatrix); /* build projection matrix */
-
-    /* Set viewing transform */
-    SetTranslation(0.0, -5.0, -20.0, ViewMatrix); /* translation of the camera */
-    float RotationMatrix[16];
-    SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
-    MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
 
 }
 
@@ -577,30 +357,39 @@ void Resize(GLFWwindow *window, int width, int height) {
 *******************************************************************/
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
-    switch(key)
-    {
-        case GLFW_KEY_W: // forwards
-            keyboard.up = action == GLFW_PRESS;
-            break;
-        case GLFW_KEY_S: // backwards
-            keyboard.down = action == GLFW_PRESS;
-            break;
-        case GLFW_KEY_A: // left
-            keyboard.left = action == GLFW_PRESS;
-            break;
-        case GLFW_KEY_D: // right
-            keyboard.right = action == GLFW_PRESS;
-            break;
-        case GLFW_KEY_1: case GLFW_KEY_2: case GLFW_KEY_3: case GLFW_KEY_0:
-            currentLimb = key - 48; // GLFW_KEY_0 = 48
-            break;
-        case GLFW_KEY_Q:
-            if (action == GLFW_PRESS) {
-                std::cout << "Bye!" << std::endl;
-                exit(0);
-            }
+    if (key == GLFW_KEY_W) {  // forwards
+        if (action == GLFW_PRESS) {
+            keyboard.up = 1;
+        } else if (action == GLFW_RELEASE) {
+            keyboard.up = 0;
+        }
+    } else if (key == GLFW_KEY_S) { // backwards
+        if (action == GLFW_PRESS) {
+            keyboard.down = 1;
+        } else if (action == GLFW_RELEASE) {
+            keyboard.down = 0;
+        }
+    } else if (key == GLFW_KEY_A) { // left
+        if (action == GLFW_PRESS) {
+            keyboard.left = 1;
+        } else if (action == GLFW_RELEASE) {
+            keyboard.left = 0;
+        }
+    } else if (key == GLFW_KEY_D) { // right
+        if (action == GLFW_PRESS) {
+            keyboard.right = 1;
+        } else if (action == GLFW_RELEASE) {
+            keyboard.right = 0;
+        }
+    } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
+            && action == GLFW_PRESS) {
+        keyboard.currentLimb = key - 48; // GLFW_KEY_0 = 48
+    } else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        std::cout << "Bye!" << std::endl;
+        exit(0);
     }
-    std::cout << "current limb: " << currentLimb << std::endl;
+
+    cout << "current limb: " << keyboard.currentLimb << endl;
 
 }
 
@@ -659,13 +448,18 @@ int main(int argc, char **argv) {
     /* Setup scene and rendering parameters */
     Initialize();
 
+    Arm arm;
+    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, THICKNESS);
+    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH, THICKNESS);
+
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         /* Update scene */
-        OnIdle();
+        arm.update(&keyboard);
+        // OnIdle();
         /* Draw scene */
-        Display();
+        Display(arm);
     }
 
     /* Close window */
