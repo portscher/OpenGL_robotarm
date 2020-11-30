@@ -10,17 +10,14 @@
 #include "utils.hpp"
 #include "Matrix.h"
 
+extern float winWidth;
+extern float winHeight;
+
 using namespace  std;
 
 class Camera 
 {
     private:
-        void LookAt();
-        void UpdatePosition();
-        void MoveLeft(float);
-        void MoveRight(float);
-        void MoveUp(float);
-        void MoveDown(float);
         float currentPosition[3];
         float front[3];
         float up[3];
@@ -28,12 +25,19 @@ class Camera
         float yAngle;
         int lookingAt;
         float fieldOfView;
-        float viewMatrix[16];
-        float projectionMatrix[16];
+        void MoveUp(float speed);
+        void MoveDown(float speed);
+        void MoveLeft(float speed);
+        void MoveRight(float speed);
+        void LookAt(float* position, float* target, float* upVector, float* result);
 
     public:
         Camera();
-        void UpdateView(KeyboardState *state);
+        void UpdatePosition(KeyboardState *state);
+        void UpdateView();
+
+        float viewMatrix[16];
+        float projectionMatrix[16];
 };
 
 #endif /* CAMERA_H */

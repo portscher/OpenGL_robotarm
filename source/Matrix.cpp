@@ -315,8 +315,8 @@ void NormalizeVector(float* vector, int vectorSize, float* result)
  * @param degree The degree in degree to convert.
  * @return float The angle in radian.
  */
-float ToRadian(float angle)
+float ToRadian(float degree)
 {
-    float radian = ((M_PI / 180) * angle);
+    float radian = (M_PI / 180) * degree;
     return radian;
 }

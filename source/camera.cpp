@@ -2,7 +2,7 @@
 
 Camera::Camera() :
     currentPosition{ 0.0, 5.0, -25.0 },
-    front{ 0.0, 0.0, -1.0 },
+    front{ 0.0, 0.0, 1.0 },
     up{ 0.0, 1.0, 0.0 },
     xAngle(-15.0),
     yAngle(0.0),
@@ -14,7 +14,6 @@ Camera::Camera() :
 void Camera::UpdateView()
 {
     float target[3];
-    this->UpdateCameraPosition();
     this->front[0] = cos(ToRadian(this->xAngle)) * sin(ToRadian(this->yAngle));
     this->front[1] = sin(ToRadian(this->xAngle));
     this->front[2] = cos(ToRadian(this->xAngle)) * sin(ToRadian(this->yAngle));
@@ -31,7 +30,7 @@ void Camera::UpdateView()
     float aspect = winWidth / winHeight;
     float nearPlane = 1.0;
     float farPlane = 50.0;
-    Glew::SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
+    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
 }
 
 void Camera::MoveUp(float speed)
@@ -45,7 +44,7 @@ void Camera::MoveDown(float speed)
 {
     float temp[3];
     ScalarMultiplication(speed, this->front, 3, temp);
-    Substract(this->, temp, 3, this->currentPosition);
+    Substract(this->currentPosition, temp, 3, this->currentPosition);
 } 
 
 void Camera::MoveLeft(float speed)
@@ -70,28 +69,27 @@ void Camera::MoveRight(float speed)
  * @brief Updates the position of the camera object.
  * 
  */
-void Camera::UpdateCameraPosition(KeyboardState *state) {
+void Camera::UpdatePosition(KeyboardState *state) {
     float cameraSpeed = 0.2;
-    float temp[3];
-    
+
     if (state->up)
     {
-        this->MoveUp(cameraSpeed);
+        MoveUp(cameraSpeed);
     }
 
-    if (keyboard.down)
+    if (state->down)
     {
-        this->MoveDown(cameraSpeed);
+        MoveDown(cameraSpeed);
     }
 
-    if (keyboard.left)
+    if (state->left)
     {
-        this->MoveLeft(cameraSpeed);
+        MoveLeft(cameraSpeed);
     }
 
-    if (keyboard.right)
+    if (state->right)
     {
-        this->MoveRight(cameraSpeed);
+        MoveRight(cameraSpeed);
     }
 }
 
@@ -115,6 +113,18 @@ void Camera::LookAt(float* position, float* target, float* upVector, float* resu
 
     float up[3];
     CrossProduct(forward, left, up);
+
+    // float matrix[16] =
+    // {
+    //     left[0], left[1], left[2], 0.0,
+    //     up[0], up[1], up[2], 0.0,
+    //     forward[0], forward[1], forward[2], 0.0,
+    //     0.0, 0.0, 0.0, 1.0
+    // };
+
+    // float t[16];
+    // SetTranslation(-position[0], -position[1], -position[2], t);
+    // MultiplyMatrix(matrix, t, matrix);
 
     float matrix[16];
     SetIdentityMatrix(matrix);
