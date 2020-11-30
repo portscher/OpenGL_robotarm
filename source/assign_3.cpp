@@ -25,7 +25,8 @@
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
 
-void UpdateCameraView(int);
+void UpdateCameraView();
+void UpdateCameraPosition();
 void LookAt(float*, float*, float*, float*);
 
 /* Number of objects in the scene */
@@ -157,9 +158,26 @@ void KeyboardUp(unsigned char key, int x, int y) {
 
 void Keyboard(unsigned char key, int x, int y)
 {
+    if (key == 'w')
+    {
+        keyboard.up = 1;
+    }
+
+    if (key == 's')
+    {
+        keyboard.down = 1;
+    }
+
+    if (key == 'a')
+    {
+        keyboard.left = 1;
+    }
+
+    if (key == 'd')
+    {
+        keyboard.right = 1;
+    }
 }
-
-
 
 /*----------------------------------------------------------------*/
 
@@ -404,6 +422,8 @@ void OnIdle() {
             updateLimb(&cuboids[i], anim ? delta : 0);
         // }
     }
+
+    UpdateCameraView();
 }
 
 
@@ -571,8 +591,6 @@ void Initialize() {
     float RotationMatrix[16];
     SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
     MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
-
-    UpdateCameraView(0);
 }
 
 
@@ -626,6 +644,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
                 exit(0);
             }
     }
+
     std::cout << "current limb: " << currentLimb << std::endl;
 
 }
@@ -648,7 +667,7 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
  * 
  */
 void UpdateCameraPosition() {
-    float cameraSpeed = .2;
+    float cameraSpeed = 0.2;
     float temp[3];
     if (keyboard.up)
     {
@@ -679,7 +698,7 @@ void UpdateCameraPosition() {
     }
 }
 
-void UpdateCameraView(int delta)
+void UpdateCameraView()
 {
     float target[3];
     UpdateCameraPosition();
@@ -688,6 +707,11 @@ void UpdateCameraView(int delta)
     cam.front[2] = cos(ToRadian(cam.xAngle)) * sin(ToRadian(cam.yAngle));
     NormalizeVector(cam.front, 3, cam.front);
     Add(cam.currentPosition, cam.front, 3, target);
+
+    printf("pos: [%g,%g, %g]\nfront: [%g, %g, %g]\nlookingat: [%g, %g, %g]\n",
+    cam.currentPosition[0], cam.currentPosition[1], cam.currentPosition[2],
+    cam.front[0], cam.front[1], cam.front[2],
+    target[0], target[1], target[2]);
 
     LookAt(cam.currentPosition, target, cam.up, cam.viewMatrix);
 
@@ -707,30 +731,35 @@ void UpdateCameraView(int delta)
  */
 void LookAt(float* position, float* target, float* upVector, float* result)
 {
-    float direction[3];
-    Substract(position, target, 3, direction);
-    NormalizeVector(direction, 3, direction);
+    float forward[3];
+    Substract(position, target, 3, forward);
+    NormalizeVector(forward, 3, forward);
 
-    float right[3];
-    CrossProduct(upVector, direction, right);
-    NormalizeVector(right, 3, right);
+    float left[3];
+    CrossProduct(upVector, forward, left);
+    NormalizeVector(left, 3, left);
 
     float up[3];
-    CrossProduct(direction, right, up);
+    CrossProduct(forward, left, up);
 
-    float temp[16] =
-    {
-        right[0], right[1], right[2], 0.0,
-        up[0], up[1], up[2], 0.0,
-        direction[0], direction[1], direction[2], 0.0,
-        0.0, 0.0, 0.0, 1.0
-    };
-
-    float t[16];
-    SetTranslation(-position[0], -position[1], -position[2], t);
-    MultiplyMatrix(temp, t, temp);
+    float matrix[16];
+    SetIdentityMatrix(matrix);
     
-    memcpy(result, temp, 16 * sizeof(float));
+    matrix[0] = left[0];
+    matrix[4] = left[1];
+    matrix[8] = left[2];
+    matrix[1] = up[0];
+    matrix[5] = up[1];
+    matrix[9] = up[2];
+    matrix[2] = forward[0];
+    matrix[6] = forward[1];
+    matrix[10] = forward[2];
+
+    matrix[12] = -left[0] * position[0] - left[1] * position[1] - left[2] * position[2];
+    matrix[13] = -up[0] * position[0] - up[1] * position[1] - up[2] * position[2];
+    matrix[14] = -forward[0] * position[0] - forward[1] * position[1] - forward[2] * position[2];
+
+    memcpy(result, matrix, 16 * sizeof(float));
 }
 
 /******************************************************************
@@ -777,8 +806,10 @@ int main(int argc, char **argv) {
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
         /* Update scene */
         OnIdle();
+
         /* Draw scene */
         Display();
     }
