@@ -1,15 +1,3 @@
-/******************************************************************
-*
-* assign_1.cpp
-*
-* Interactive Graphics and Simulation Group
-* Institute of Computer Science
-* University of Innsbruck
-*
-*******************************************************************/
-
-
-/* Standard includes */
 #include <cstdio>
 #include <stdlib.h>
 #include <string.h>
@@ -27,9 +15,6 @@
 #include "arm.hpp"
 #include "utils.hpp"
 
-/* Number of objects in the scene */
-#define nbObjects 4
-/*----------------------------------------------------------------*/
 /* Window parameters */
 float winWidth = 1000.0f;
 float winHeight = 800.0f;
@@ -37,78 +22,18 @@ float winHeight = 800.0f;
 /* window */
 GLFWwindow *window;
 
-
-float scales[nbObjects][16];
-float translations[nbObjects][16];
-float rotations[nbObjects][16];
-
-typedef struct cuboid {
-    const int id;
-    const int parent_id; // hierarchical structure, if one limb moves, all child limbs have to move as well
-    float distance;
-    float transformation[16];
-    float model[16];
-
-    float scale[3];
-    float translation[3];
-    float current_rotation[3]; /* Variables for storing current rotation angles */
-    float rotation_angle;
-
-    GLuint VBO;
-    GLuint CBO;
-    GLuint IBO;
-    GLuint VAO;
-} Cuboid;
-
 GLuint defaultVAO;
 
 const float THICKNESS = 0.3f;
 const float FIRST_LIMB_HEIGHT = 2.5f;
-const float FIRST_LIMB_Y_TRANSLATION = 2.25f;
 const float SECOND_LIMB_LENGTH = 1.5f;
-const float SECOND_LIMB_X_TRANSLATION = SECOND_LIMB_LENGTH / 2 + 0.45f;
 const float THIRD_LIMB_LENGTH = 1.0f;
-
-Cuboid cuboids[nbObjects] = {
-        // bottom
-        {.id = 0, .distance = 0, .transformation = {0}, .model = {0}, .scale = {2.5f, 0.25f, 2.5f},
-                .translation = {0}, .current_rotation = {0}},
-        // first limb
-        {.id = 1, .parent_id = 0, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {THICKNESS,
-                                                                                               FIRST_LIMB_HEIGHT,
-                                                                                               THICKNESS},
-                .translation = {0.0, FIRST_LIMB_Y_TRANSLATION, .0}, .current_rotation = {0}},
-        // second limb
-        {.id = 2, .parent_id = 1, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {SECOND_LIMB_LENGTH,
-                                                                                               THICKNESS, THICKNESS},
-                .translation = {SECOND_LIMB_X_TRANSLATION, FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION,
-                                0}, .current_rotation = {0}, .rotation_angle = 90},
-        // third limb
-        {.id = 3, .parent_id = 2, .distance = 0.2, .transformation = {0}, .model = {0}, .scale = {THICKNESS,
-                                                                                               THIRD_LIMB_LENGTH,
-                                                                                               THICKNESS},
-                .translation = {SECOND_LIMB_LENGTH + 0.9f,
-                                FIRST_LIMB_HEIGHT + FIRST_LIMB_Y_TRANSLATION - THIRD_LIMB_LENGTH,
-                                0}, .current_rotation = {0}},
-};
-
 
 GLuint ShaderProgram;
 
 /* Matrices for uniform variables in vertex shader */
 float ProjectionMatrix[16];             /* Perspective projection matrix */
 float ViewMatrix[16];                   /* Camera view matrix */
-
-/* Own rotation matrices for each object */
-float RotationMatrixAnimX[nbObjects][16];
-float RotationMatrixAnimY[nbObjects][16];
-float RotationMatrixAnimZ[nbObjects][16];
-float RotationMatrixAnim[nbObjects][16];
-
-/* Reference time for animation */
-double oldTime = 0;
-
-
 
 KeyboardState keyboard = {
     .up = 0,
@@ -117,33 +42,6 @@ KeyboardState keyboard = {
     .right = 0,
     .currentLimb = 0,
 };
-
-void KeyboardUp(unsigned char key, int x, int y) {
-    switch (key) {
-        case 'w':
-            keyboard.up = 0;
-            break;
-        case 's':
-            keyboard.down = 0;
-            break;
-        case 'a': // left
-            keyboard.left = 0;
-            break;
-        case 'd': // right
-            keyboard.right = 0;
-            break;
-    }
-}
-
-void Keyboard(unsigned char key, int x, int y)
-{
-}
-
-
-
-/*----------------------------------------------------------------*/
-
-
 
 /******************************************************************
 *
@@ -177,86 +75,9 @@ void Display(Arm arm) {
 
     arm.display(ShaderProgram);
 
-    /* For each object in the scene */
-    // for (int i = 0; i < nbObjects; i++) {
-    //
-    //     GLint size;
-    //     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    //
-    //     GLint RotationUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
-    //     if (RotationUniform == -1) {
-    //         fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", i);
-    //         exit(-1);
-    //     }
-    //     glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, cuboids[i].model);
-    //
-    //     /* Bind VAO of the current object */
-    //     glBindVertexArray(cuboids[0].VAO);
-    //     /* Draw the data contained in the VAO */
-    //     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
-    //
-    //     glBindVertexArray(defaultVAO);
-    // }
     /* Swap between front and back buffer */
     glfwSwapBuffers(window);
 }
-
-/******************************************************************
- * updateBottom
- *******************************************************************/
-void updateBottom(Cuboid *cuboid) {
-    SetIdentityMatrix(cuboid->transformation);
-    SetIdentityMatrix(cuboid->model);
-
-    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + 0.0f, 360.0);
-    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
-
-    SetIdentityMatrix(cuboid->transformation);
-    MultiplyMatrix(RotationMatrixAnimY[cuboid->id], cuboid->transformation, cuboid->transformation);
-
-    MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id], cuboid->model);
-    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
-}
-
-/******************************************************************
- * updateLimb
- * This function updates the limb's position, movement etc.
- * for every time unit
- *******************************************************************/
-
-void updateLimb(Cuboid *cuboid, double delta) {
-
-    float temp[16];
-    SetIdentityMatrix(temp);
-    SetIdentityMatrix(cuboid->transformation);
-    // SetIdentityMatrix(cuboid->model);
-
-    if (cuboid->parent_id != 0) {
-        MultiplyMatrix(cuboid->transformation, cuboids[cuboid->parent_id].transformation, cuboid->transformation);
-    }
-    // 1. Initiate rotation around Y axis for all objects
-    cuboid->current_rotation[1] = fmod(cuboid->current_rotation[1] + delta * 20.0f, 360.0);
-    SetRotationY(cuboid->current_rotation[1], RotationMatrixAnimY[cuboid->id]);
-
-    // Multiply all three rotation matrices
-    MultiplyMatrix(RotationMatrixAnimX[cuboid->id], RotationMatrixAnimY[cuboid->id], RotationMatrixAnim[cuboid->id]);
-    MultiplyMatrix(RotationMatrixAnim[cuboid->id], RotationMatrixAnimZ[cuboid->id], RotationMatrixAnim[cuboid->id]);
-
-    MultiplyMatrix(RotationMatrixAnim[cuboid->id], cuboid->transformation, cuboid->transformation);
-
-    // 2. Add Scaling to the transformation matrix
-    // MultiplyMatrix(cuboid->transformation, RotationMatrixAnim[cuboid->id], cuboid->transformation);
-    // MultiplyMatrix(cuboid->transformation, translations[cuboid->id],              cuboid->transformation);
-    // MultiplyMatrix(translations[cuboid->id], RotationMatrixAnim[cuboid->id],       cuboid->transformation);
-    MultiplyMatrix(cuboid->transformation, scales[cuboid->id],              cuboid->transformation);
-
-    // 3. Add Translation to the transformation matrix
-    MultiplyMatrix(RotationMatrixAnim[cuboid->id], translations[cuboid->id], cuboid->model);
-    // MultiplyMatrix(cuboid->model, translations[cuboid->id], cuboid->model);
-    // MultiplyMatrix(cuboid->model, RotationMatrixAnim[cuboid->id], cuboid->model);
-    MultiplyMatrix(cuboid->model, scales[cuboid->id], cuboid->model);
-}
-
 
 /******************************************************************
 *
@@ -269,13 +90,6 @@ void updateLimb(Cuboid *cuboid, double delta) {
 *
 *******************************************************************/
 void Initialize() {
-
-    /* Create cube meshes */
-    // for (int i = 0; i < nbObjects; i++) {
-    //     GLuint *vbo = &cuboids[i].VBO;
-    //     createCubeMesh(vbo, &cuboids[i].IBO, &cuboids[i].CBO, &cuboids[i].VAO);
-    // }
-
     /* Set background (clear) color to blue */
     glClearColor(0.0, 0.0, 0.4, 0.0);
 
@@ -283,11 +97,9 @@ void Initialize() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-
     /* Setup shaders and shader program */
     ShaderProgram = glCreateProgram();
     CreateShaderProgram(ShaderProgram);
-
 
     /* Initialize project/view matrices */
     SetIdentityMatrix(ProjectionMatrix);
@@ -304,29 +116,6 @@ void Initialize() {
     float RotationMatrix[16];
     SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
     MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
-
-    /* init scale matrix with a non-uniform scaling */
-    for (int i = 0; i < nbObjects; i++) {
-        /* Initialize scale matrices */
-        SetScaleMatrix(cuboids[i].scale[0], cuboids[i].scale[1], cuboids[i].scale[2], scales[i]);
-
-        /* Initialize Translation matrices */
-        SetTranslation(cuboids[i].translation[0], cuboids[i].translation[1],
-                       cuboids[i].translation[2], translations[i]);
-
-        /* Initialize model matrices */
-        SetIdentityMatrix(cuboids[i].model);
-    }
-
-    /* Initialize animation matrices */
-    for (int i = 0; i < nbObjects; i++) {
-        SetIdentityMatrix(RotationMatrixAnimX[i]);
-        SetIdentityMatrix(RotationMatrixAnimY[i]);
-        SetIdentityMatrix(RotationMatrixAnimZ[i]);
-        SetIdentityMatrix(RotationMatrixAnim[i]);
-    }
-
-
 }
 
 
@@ -455,9 +244,10 @@ int main(int argc, char **argv) {
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
         /* Update scene */
         arm.update(&keyboard);
-        // OnIdle();
+
         /* Draw scene */
         Display(arm);
     }
