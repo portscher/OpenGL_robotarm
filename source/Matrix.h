@@ -23,4 +23,4 @@ void SetTranslation(float x, float y, float z, float* result);
 void MultiplyMatrix(float* m1, float* m2, float* result);
 void SetPerspectiveMatrix(float fov, float aspect, float nearPlane, float farPlane, float* result);
 
-#endif // __MATRIX_H__
+#endif

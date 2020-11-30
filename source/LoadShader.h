@@ -16,4 +16,4 @@
 
 const char* LoadShader(const char* filename);
 
-#endif // __LOAD_SHADER_H__
+#endif

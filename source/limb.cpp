@@ -1,10 +1,10 @@
 #include "limb.hpp"
 
 Limb::Limb(int _ID, float _position[3], float size[2]) :
-    internal{0}, transformation{0}, model{0},
-    rotationX(0), rotationY(0), rotationZ(0),
-    width(size[0]), length(size[1]), position{0}
-{
+        internal{0}, transformation{0}, model{0},
+        rotationX(0), rotationY(0), rotationZ(0),
+        width(size[0]), length(size[1]), position{0} {
+
     ID = _ID;
     VAO = createCubeMesh(width, length);
 
@@ -22,17 +22,17 @@ float Limb::offset() {
 }
 
 // TODO axis could be an enum
-void Limb::setRotation(int axis, float grad) {
-    // cout << "updating rotation axis " << axis << " to " << grad << endl;
+void Limb::setRotation(int axis, float deg) {
+    // cout << "updating rotation axis " << axis << " to " << deg << endl;
     switch (axis) {
         case 0:
-            rotationX = grad;
+            rotationX = deg;
             break;
         case 1:
-            rotationY = grad;
+            rotationY = deg;
             break;
         case 2:
-            rotationZ = grad;
+            rotationZ = deg;
             break;
     }
 }
@@ -52,19 +52,18 @@ float Limb::getRotation(int axis) {
     }
 }
 
-void Limb::setAngle(int grad) {
-    angle = grad;
+void Limb::setAngle(int deg) {
+    angle = deg;
 }
 
 void Limb::getTransformation(float *result) {
-    memcpy(result, transformation, 16*sizeof(float));
+    memcpy(result, transformation, 16 * sizeof(float));
 }
 
 void Limb::update(float *parentTransform) {
     // 0. reset transformations
     SetIdentityMatrix(model);
     SetIdentityMatrix(transformation);
-
 
 
     float result[16];

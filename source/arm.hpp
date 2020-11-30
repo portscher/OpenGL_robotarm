@@ -1,18 +1,17 @@
 #ifndef ARM_H
 #define ARM_H
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstdio>
 #include <vector>
 #include "limb.hpp"
 #include "utils.hpp"
 
-using namespace  std;
+using namespace std;
 
-class Arm
-{
+class Arm {
 private:
-    vector<Limb*> limbs;
+    vector<Limb *> limbs;
     GLint VAO;
     float internal[16];
     float height;
@@ -20,9 +19,13 @@ private:
 
 public:
     Arm();
+
     void addLimb(float width, float height);
+
     void update(KeyboardState *state);
+
     void display(GLint ShaderProgram);
+
     Limb getLimb(int index);
 };
 

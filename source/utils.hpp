@@ -1,8 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdlib.h>
-#include "math.h"
+#include <cstdlib>
+#include <cmath>
 #include <cstdio>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -30,4 +30,4 @@ void CreateShaderProgram(GLuint ShaderProgram);
 
 void printMatrix(float* mat);
 
-#endif /* UTILS_H */
+#endif

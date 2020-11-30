@@ -1,21 +1,14 @@
 #ifndef LIMB_H
 #define LIMB_H
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <cstdio>
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "utils.hpp"
 #include "Matrix.h"
-
-// const float THICKNESS = 0.3f;
-// const float FIRST_LIMB_HEIGHT = 2.5f;
-// const float FIRST_LIMB_Y_TRANSLATION = 2.25f;
-// const float SECOND_LIMB_LENGTH = 1.5f;
-// const float SECOND_LIMB_X_TRANSLATION = SECOND_LIMB_LENGTH / 2 + 0.45f;
-// const float THIRD_LIMB_LENGTH = 1.0f;
 
 using namespace std;
 
@@ -47,13 +40,13 @@ private:
 public:
     Limb(int ID, float position[3], float size[2]);
 
-    void setRotation(int axis, float grad);
+    void setRotation(int axis, float deg);
     float getRotation(int axis);
     void getTransformation(float *transformation);
-    void setAngle(int grad);
+    void setAngle(int deg);
     void update(float *transformation);
     void display(GLint program);
     float offset();
 };
 
-#endif /* LIMB_H */
+#endif

@@ -1,7 +1,4 @@
 #include <cstdio>
-#include <stdlib.h>
-#include <string.h>
-#include <cmath>
 #include <iostream>
 #include <cstdlib>
 
@@ -10,7 +7,6 @@
 #include <GLFW/glfw3.h>
 
 /* Local includes */
-#include "LoadShader.h"    /* Loading function for shader code */
 #include "Matrix.h"        /* Functions for matrix handling */
 #include "arm.hpp"
 #include "utils.hpp"
@@ -36,11 +32,11 @@ float ProjectionMatrix[16];             /* Perspective projection matrix */
 float ViewMatrix[16];                   /* Camera view matrix */
 
 KeyboardState keyboard = {
-    .up = 0,
-    .down = 0,
-    .left = 0,
-    .right = 0,
-    .currentLimb = 0,
+        .up = 0,
+        .down = 0,
+        .left = 0,
+        .right = 0,
+        .currentLimb = 0,
 };
 
 /******************************************************************
@@ -171,7 +167,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
             keyboard.right = 0;
         }
     } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
-            && action == GLFW_PRESS) {
+               && action == GLFW_PRESS) {
         keyboard.currentLimb = key - 48; // GLFW_KEY_0 = 48
     } else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
         std::cout << "Bye!" << std::endl;
@@ -238,7 +234,7 @@ int main(int argc, char **argv) {
     Arm arm;
     arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT);
     arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
-    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
+    arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {
