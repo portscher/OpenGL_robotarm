@@ -5,13 +5,13 @@
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(int _ID, const float _position[3], float size[2]) :
+Limb::Limb(int _ID, const float _position[3], float size[2], float colour[3]) :
         rotationX(0), rotationY(0), rotationZ(0),
         position{0}, length(size[1]), width(size[0]),
         internal{0}, transformation{0}, model{0} {
 
     ID = _ID;
-    VAO = createCubeMesh(width, length);
+    VAO = createCubeMesh(width, length, colour);
 
     SetIdentityMatrix(internal);
     SetIdentityMatrix(transformation);

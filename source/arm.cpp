@@ -8,7 +8,8 @@
 Arm::Arm() :
         internal{0}, height(.25), width(2.5) {
     // base
-    VAO = createCubeMesh(width, height);
+    float baseColour[3] = {0.9f, 0.9f, 0.5f};
+    VAO = createCubeMesh(width, height, baseColour);
     SetIdentityMatrix(internal);
 }
 
@@ -19,7 +20,7 @@ Arm::Arm() :
 * w = width
 * h = height
 *******************************************************************/
-void Arm::addLimb(float w, float h) {
+void Arm::addLimb(float w, float h, float* colour) {
     int currentIndex = limbs.size() - 1;
 
     // offset relative to previous limb
@@ -37,7 +38,7 @@ void Arm::addLimb(float w, float h) {
 
     float pos[] = {center, offset, center};
     float size[] = {w, h};
-    limbs.push_back(new Limb(currentIndex, pos, size));
+    limbs.push_back(new Limb(currentIndex, pos, size, colour));
 }
 
 /******************************************************************

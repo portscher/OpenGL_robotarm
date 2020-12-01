@@ -8,7 +8,7 @@
 * the geometry.
 *
 *******************************************************************/
-GLuint createCubeMesh(float width, float height) {
+GLuint createCubeMesh(float width, float height, float* colour) {
     GLuint VAO;
     GLuint VBO;
     GLuint IBO;
@@ -28,14 +28,14 @@ GLuint createCubeMesh(float width, float height) {
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0,
-            1.0, 1.0, 1.0,
-            0.0, 1.0, 1.0,
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2],
+            colour[0], colour[1], colour[2]
     };
 
     GLushort index_buffer_data[] = { /* Indices of 6*2 triangles (6 sides) */

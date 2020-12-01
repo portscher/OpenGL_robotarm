@@ -31,6 +31,8 @@ private:
     float length;
     float width;
 
+    float colour[3];
+
     // internal is used for internal transformations like scale
     float internal[16];
     // transformation has rotations + translations
@@ -38,7 +40,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, const float position[3], float size[2]);
+    Limb(int ID, const float position[3], float size[2], float colour[3]);
 
     void setRotation(int axis, float deg);
     float getRotation(int axis);

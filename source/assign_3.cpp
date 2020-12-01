@@ -22,8 +22,11 @@ GLuint defaultVAO;
 
 const float THICKNESS = .4;
 const float FIRST_LIMB_HEIGHT = 2.5f;
+float COLOUR1[3] = {0.0f, 0.3f, 0.5f};
 const float SECOND_LIMB_LENGTH = 2.5f;
+float COLOUR2[3] = {0.3f, 0.5f, 0.0f};
 const float THIRD_LIMB_LENGTH = 2.0f;
+float COLOUR3[3] = {0.5f, 0.0f, 0.3f};
 
 GLuint ShaderProgram;
 
@@ -87,8 +90,8 @@ void Display(Arm arm) {
 *
 *******************************************************************/
 void Initialize() {
-    /* Set background (clear) color to blue */
-    glClearColor(0.0, 0.0, 0.4, 0.0);
+    /* Set background (clear) color to gray */
+    glClearColor(0.1, 0.1, 0.1, 0.0);
 
     /* Enable depth testing */
     glEnable(GL_DEPTH_TEST);
@@ -240,9 +243,9 @@ int main(int argc, char **argv) {
     Initialize();
 
     Arm arm;
-    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT);
-    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH);
-    arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH);
+    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, COLOUR1);
+    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH, COLOUR2);
+    arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH, COLOUR3);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window)) {

@@ -20,7 +20,7 @@ private:
 public:
     Arm();
 
-    void addLimb(float width, float height);
+    void addLimb(float width, float height, float* colour);
 
     void update(KeyboardState *state);
 
