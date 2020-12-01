@@ -2,7 +2,7 @@
 
 Camera::Camera() :
     currentPosition{ 0.0, 5.0, -25.0 },
-    front{ 0.0, 0.0, 1.0 },
+    front{ 0.0, 0.0, -1.0 },
     up{ 0.0, 1.0, 0.0 },
     xAngle(-15.0),
     yAngle(0.0),
@@ -11,7 +11,7 @@ Camera::Camera() :
 {
 }
 
-void Camera::UpdateView()
+void Camera::UpdateView(float* projectionMatrix, float* viewMatrix)
 {
     float target[3];
     this->front[0] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
@@ -25,12 +25,12 @@ void Camera::UpdateView()
     this->front[0], this->front[1], this->front[2],
     target[0], target[1], target[2]);
 
-    this->LookAt(this->currentPosition, target, this->up, this->viewMatrix);
+    this->LookAt(target, viewMatrix);
 
     float aspect = winWidth / winHeight;
     float nearPlane = 1.0;
     float farPlane = 50.0;
-    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
+    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, projectionMatrix);
 }
 
 void Camera::MoveUp(float speed)
@@ -101,18 +101,18 @@ void Camera::UpdatePosition(KeyboardState *state) {
  * @param upVector The up vector of the camera.
  * @param result The resulting view matrix.
  */
-void Camera::LookAt(float* position, float* target, float* upVector, float* result)
+void Camera::LookAt(float* target, float* viewMatrix)
 {
     float forward[3];
-    Substract(position, target, 3, forward);
+    Substract(this->currentPosition, target, 3, forward);
     NormalizeVector(forward, 3, forward);
 
     float left[3];
-    CrossProduct(upVector, forward, left);
+    CrossProduct(this->up, forward, left);
     NormalizeVector(left, 3, left);
 
-    float up[3];
-    CrossProduct(forward, left, up);
+    float aui[3];
+    CrossProduct(forward, left, aui);
 
     // float matrix[16] =
     // {
@@ -132,16 +132,16 @@ void Camera::LookAt(float* position, float* target, float* upVector, float* resu
     matrix[0] = left[0];
     matrix[4] = left[1];
     matrix[8] = left[2];
-    matrix[1] = up[0];
-    matrix[5] = up[1];
-    matrix[9] = up[2];
+    matrix[1] = aui[0];
+    matrix[5] = aui[1];
+    matrix[9] = aui[2];
     matrix[2] = forward[0];
     matrix[6] = forward[1];
     matrix[10] = forward[2];
 
-    matrix[12] = -left[0] * position[0] - left[1] * position[1] - left[2] * position[2];
-    matrix[13] = -up[0] * position[0] - up[1] * position[1] - up[2] * position[2];
-    matrix[14] = -forward[0] * position[0] - forward[1] * position[1] - forward[2] * position[2];
+    matrix[12] = left[0] * -this->currentPosition[0] + left[1] * -this->currentPosition[1] + left[2] * -this->currentPosition[2];
+    matrix[13] = aui[0] * -this->currentPosition[0] + aui[1] * -this->currentPosition[1] + aui[2] * -this->currentPosition[2];
+    matrix[14] = forward[0] * -this->currentPosition[0] + forward[1] * -this->currentPosition[1] + forward[2] * -this->currentPosition[2];
 
-    memcpy(result, matrix, 16 * sizeof(float));
+    memcpy(viewMatrix, matrix, 16 * sizeof(float));
 }

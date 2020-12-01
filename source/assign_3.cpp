@@ -77,14 +77,14 @@ void Display(Arm arm, Camera cam) {
         fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
         exit(-1);
     }
-    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, cam.projectionMatrix);
+    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjectionMatrix);
 
     GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
     if (ViewUniform == -1) {
         fprintf(stderr, "Could not bind uniform ViewMatrix\n");
         exit(-1);
     }
-    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, cam.viewMatrix);
+    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
 
     arm.display(ShaderProgram);
 
@@ -115,20 +115,22 @@ void Initialize(Camera cam) {
     CreateShaderProgram(ShaderProgram);
 
     /* Initialize project/view matrices */
-    SetIdentityMatrix(cam.projectionMatrix);
-    SetIdentityMatrix(cam.viewMatrix);
+    SetIdentityMatrix(ProjectionMatrix);
+    SetIdentityMatrix(ViewMatrix);
 
     /* Set projection transform */
     float aspect = winWidth / winHeight;
     float nearPlane = 1.0;
     float farPlane = 50.0;
-    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, cam.projectionMatrix); /* build projection matrix */
+    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, ProjectionMatrix); /* build projection matrix */
 
     /* Set viewing transform */
-    SetTranslation(0.0, -5.0, -20.0, cam.viewMatrix); /* translation of the camera */
+    SetTranslation(0.0, -5.0, -20.0, ViewMatrix); /* translation of the camera */
     float RotationMatrix[16];
     SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
-    MultiplyMatrix(RotationMatrix, cam.viewMatrix, cam.viewMatrix); /* assemble View matrix */
+    MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
+
+//    cam.UpdateView();
 }
 
 
@@ -261,9 +263,9 @@ int main(int argc, char **argv) {
         /* Update scene */
         arm.update(&keyboard);
 
+        camera.UpdateView(ProjectionMatrix, ViewMatrix);
         camera.UpdatePosition(&keyboard);
-        camera.UpdateView();
-
+        
         /* Draw scene */
         Display(arm, camera);
     }

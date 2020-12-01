@@ -296,13 +296,18 @@ void NormalizeVector(float* vector, int vectorSize, float* result)
     double sum = 0; 
     for(int i = 0; i < vectorSize; i++)
     {
-        sum += pow(vector[i], 2);
+        sum += vector[i] * vector[i];
     }
 
     float length = sqrt(sum);
     float normalized[vectorSize];
     for(int i = 0; i < vectorSize; i++)
     {
+        if (length == 0)
+        {
+            normalized[i] = 0;
+            continue;
+        }
         normalized[i] = vector[i] / length;
     }
 
@@ -312,7 +317,7 @@ void NormalizeVector(float* vector, int vectorSize, float* result)
 /**
  * @brief Converts the given angle in degree to radian.
  * 
- * @param degree The degree in degree to convert.
+ * @param degree The angle in degree to convert.
  * @return float The angle in radian.
  */
 float ToRadian(float degree)
