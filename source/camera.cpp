@@ -14,9 +14,9 @@ Camera::Camera() :
 void Camera::UpdateView()
 {
     float target[3];
-    this->front[0] = cos(ToRadian(this->xAngle)) * sin(ToRadian(this->yAngle));
-    this->front[1] = sin(ToRadian(this->xAngle));
-    this->front[2] = cos(ToRadian(this->xAngle)) * sin(ToRadian(this->yAngle));
+    this->front[0] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
+    this->front[1] = sinf(ToRadian(this->xAngle));
+    this->front[2] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
     NormalizeVector(this->front, 3, this->front);
     Add(this->currentPosition, this->front, 3, target);
 
@@ -74,22 +74,22 @@ void Camera::UpdatePosition(KeyboardState *state) {
 
     if (state->up)
     {
-        MoveUp(cameraSpeed);
+        this->MoveUp(cameraSpeed);
     }
 
     if (state->down)
     {
-        MoveDown(cameraSpeed);
+        this->MoveDown(cameraSpeed);
     }
 
     if (state->left)
     {
-        MoveLeft(cameraSpeed);
+        this->MoveLeft(cameraSpeed);
     }
 
     if (state->right)
     {
-        MoveRight(cameraSpeed);
+        this->MoveRight(cameraSpeed);
     }
 }
 
