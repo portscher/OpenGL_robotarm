@@ -22,6 +22,20 @@ typedef struct keyboard {
     int currentLimb;
 } KeyboardState;
 
+typedef struct scrollWheel
+{
+    float zoom;
+} ScrollWheelState;
+
+typedef struct mouse
+{
+    float lastX;
+    float lastY;
+    int firstMouse;
+    float xAngle;
+    float yAngle;
+} MouseState;
+
 GLuint createCubeMesh(float width, float height);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);

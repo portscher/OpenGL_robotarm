@@ -52,6 +52,20 @@ KeyboardState keyboard = {
     .currentLimb = 0,
 };
 
+ScrollWheelState scrollWheel
+{
+    .zoom = 45.0f,
+};
+
+MouseState mouse
+{
+    .lastX = winWidth / 2,
+    .lastY = winHeight / 2,
+    .firstMouse = 1,
+    .xAngle = 0.0f,
+    .yAngle = 0.0f,
+};
+
 /******************************************************************
 *
 * Display
@@ -199,8 +213,58 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 *
 * yoffset = value of the scrolling along Y axis
 *******************************************************************/
-void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
-    std::cout << "scrolling Y offest = " << yoffset << std::endl;
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    scrollWheel.zoom -= (float)yoffset;
+    if (scrollWheel.zoom < 1.0f)
+    {
+        scrollWheel.zoom = 1.0f;
+    }
+
+    if (scrollWheel.zoom > 45.0f)
+    {
+        scrollWheel.zoom = 45.0f; 
+    }
+}
+
+/**
+ * @brief Provides a callback for receiving the state of the mouse.
+ * 
+ * @param window The actual window
+ * @param xpos The x-position of the mouse
+ * @param ypos The y-position of the mouse.
+ * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
+ */
+void mouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+    if (mouse.firstMouse) 
+    {
+        mouse.lastX = xpos;
+        mouse.lastY = ypos;
+        mouse.firstMouse = false;
+    }
+
+    float xOffset = xpos - mouse.lastX;
+    float yOffset = mouse.lastY - ypos;
+    mouse.lastX = xpos;
+    mouse.lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    mouse.xAngle += xOffset;
+    mouse.yAngle += yOffset;
+
+    if (mouse.xAngle > 89.0f)
+    {
+        mouse.xAngle = 89.0f;
+    }
+
+    if (mouse.yAngle < -89.0f)
+    {
+        mouse.yAngle = -89.0f;
+    }
 }
 
 /******************************************************************
@@ -222,9 +286,11 @@ int main(int argc, char **argv) {
     window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
     glfwSetFramebufferSizeCallback(window, Resize);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     /* Initialize timer */
     glfwSetTime(0.0f);
@@ -258,8 +324,8 @@ int main(int argc, char **argv) {
         /* Update scene */
         arm.update(&keyboard);
 
-        camera.UpdatePosition(&keyboard);
-        camera.UpdateView();
+        camera.UpdatePosition(&keyboard, &mouse);
+        camera.UpdateZoom(&scrollWheel);
         
         /* Draw scene */
         Display(arm, camera);

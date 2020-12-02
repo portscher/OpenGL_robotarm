@@ -19,11 +19,10 @@ class Camera
 {
     private:
         float currentPosition[3];
-        float front[3];
+        float direction[3];
         float up[3];
         float xAngle;
         float yAngle;
-        int lookingAt;
         float fieldOfView;
         void MoveUp(float speed);
         void MoveDown(float speed);
@@ -33,8 +32,9 @@ class Camera
 
     public:
         Camera();
-        void UpdatePosition(KeyboardState *state);
+        void UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState);
         void UpdateView();
+        void UpdateZoom(ScrollWheelState *state);
 
         float projectionMatrix[16];
         float viewMatrix[16];

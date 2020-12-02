@@ -244,6 +244,15 @@ void Add(float* a, float* b, int matrixSize, float* result)
     memcpy(result, addition, matrixSize * sizeof(float));
 }
 
+/**
+ * @brief Computes the dot product of two matrices.
+ * 
+ * @param a First matrix.
+ * @param b Another matrix
+ * @param matrixSize The size of both matrices.
+ * @return float The resulting dot product of both matrices.
+ * @remarks Formular taken from https://en.wikipedia.org/wiki/Dot_product
+ */
 float DotProduct(float* a, float* b, int matrixSize)
 {
     float product = 0;
@@ -255,6 +264,13 @@ float DotProduct(float* a, float* b, int matrixSize)
     return product;
 }
 
+/**
+ * @brief Negates the given vector.
+ * 
+ * @param vector The vector to negate.
+ * @param vectorSize The size of the vector.
+ * @param result The array where the negated vector will be stored.
+ */
 void Negate(float* vector, int vectorSize, float* result)
 {
     float negate[vectorSize];

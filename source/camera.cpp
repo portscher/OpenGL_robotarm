@@ -1,69 +1,100 @@
 #include "camera.hpp"
 
+/**
+ * @brief Construct a new Camera object.
+ * 
+ */
 Camera::Camera() :
-    currentPosition{ 0.0, 0.0, -25.0 },
-    front{ 0.0, 0.0, 1.0 },
-    up{ 0.0, 0.0, 1.0 },
-    xAngle(-15.0f),
-    yAngle(0.0),
-    lookingAt(0.0),
+    currentPosition{ 0.0, 0.0, -10.0 },
+    direction{ 0.0, 0.0, 0.0 },
+    up{ 0.0, 1.0, 0.0 },
+    xAngle(-90.0f),
+    yAngle(0.0f),
     fieldOfView(45.0)
 {
 }
 
+/**
+ * @brief Updates the field of view (also known als zoom) of the camera.
+ * 
+ * @param state The current state of the scroll wheel.
+ */
+void Camera::UpdateZoom(ScrollWheelState* state)
+{
+    this->fieldOfView = state->zoom;
+    float aspect = winWidth / winHeight;
+    float nearPlane = 0.1f;
+    float farPlane = 100.0f;
+    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
+}
+
+/**
+ * @brief Updates the view of the camera.
+ * 
+ * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
+ */
 void Camera::UpdateView()
 {
+    // Fixing the target to the point of origin.
     float target[3] = {
         0,
         0,
         0
     };
-    this->front[0] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
-    this->front[1] = sinf(ToRadian(this->xAngle));
-    this->front[2] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
-    NormalizeVector(this->front, 3, this->front);
-    // Add(this->currentPosition, this->front, 3, target);
+    
+    Substract(this->currentPosition, target, 3, this->direction);
+    NormalizeVector(this->direction, 3, this->direction);
 
-    printf("pos: [%g,%g, %g]\nfront: [%g, %g, %g]\nlookingat: [%g, %g, %g]\n",
-    this->currentPosition[0], this->currentPosition[1], this->currentPosition[2],
-    this->front[0], this->front[1], this->front[2],
-    target[0], target[1], target[2]);
-
-    this->LookAt(target);
-
-    float aspect = winWidth / winHeight;
-    float nearPlane = 1.0;
-    float farPlane = 50.0;
-    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
+    this->LookAt(this->direction);
 }
 
+/**
+ * @brief Moves the camera up.
+ * 
+ * @param speed The speed factor that describes how fast the camera should move.
+ */
 void Camera::MoveUp(float speed)
 {
     float temp[3];
-    ScalarMultiplication(speed, this->front, 3, temp);
+    ScalarMultiplication(speed, this->direction, 3, temp);
     Add(this->currentPosition, temp, 3, this->currentPosition);
 }
 
+/**
+ * @brief Moves the camera down.
+ * 
+ * @param speed The speed factor that describes how fast the camera should move.
+ */
 void Camera::MoveDown(float speed)
 {
     float temp[3];
-    ScalarMultiplication(speed, this->front, 3, temp);
+    ScalarMultiplication(speed, this->direction, 3, temp);
     Substract(this->currentPosition, temp, 3, this->currentPosition);
 } 
 
+/**
+ * @brief Moves the camera left.
+ * 
+ * @param speed The speed factor that describes how fast the camera should move.
+ */
 void Camera::MoveLeft(float speed)
 {
     float temp[3];
-    CrossProduct(this->front, this->up, temp);
+    CrossProduct(this->direction, this->up, temp);
     NormalizeVector(temp, 3, temp);
     ScalarMultiplication(speed, temp, 3, temp);
     Substract(this->currentPosition, temp, 3, this->currentPosition);
 }
 
+/**
+ * @brief Moves the camera right.
+ * 
+ * @param speed The speed factor that describes how fast the camera should move.
+ */
 void Camera::MoveRight(float speed)
 {
     float temp[3];
-    CrossProduct(this->front,this->up, temp);
+    CrossProduct(this->direction, this->up, temp);
     NormalizeVector(temp, 3, temp);
     ScalarMultiplication(speed, temp, 3, temp);
     Add(this->currentPosition, temp, 3, this->currentPosition);
@@ -73,31 +104,36 @@ void Camera::MoveRight(float speed)
  * @brief Updates the position of the camera object.
  * 
  */
-void Camera::UpdatePosition(KeyboardState *state) {
+void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState) {
     float cameraSpeed = 0.2;
 
-    if (state->currentLimb == 0)
+    if (keyboardState->currentLimb == 0)
     {
-        if (state->up && state->currentLimb == 0)
+        if (keyboardState->up)
         {
             this->MoveUp(cameraSpeed);
         }
 
-        if (state->down)
+        if (keyboardState->down)
         {
             this->MoveDown(cameraSpeed);
         }
 
-        if (state->left)
+        if (keyboardState->left)
         {
             this->MoveLeft(cameraSpeed);
         }
 
-        if (state->right)
+        if (keyboardState->right)
         {
             this->MoveRight(cameraSpeed);
         }
     }
+
+    this->xAngle = mouseState->xAngle;
+    this->yAngle = mouseState->yAngle;
+
+    this->UpdateView();
 }
 
 /**
@@ -107,6 +143,7 @@ void Camera::UpdatePosition(KeyboardState *state) {
  * @param target The target to which the camera is pointing.
  * @param upVector The up vector of the camera.
  * @param result The resulting view matrix.
+ * @remarks Based on the article at https://www.geertarien.com/blog/2017/07/30/breakdown-of-the-lookAt-function-in-OpenGL/
  */
 void Camera::LookAt(float* target)
 {
@@ -121,18 +158,6 @@ void Camera::LookAt(float* target)
     float yAxis[3];
     CrossProduct(xAxis, zAxis, yAxis);
     Negate(zAxis, 3, zAxis);
-
-    // float matrix[16] =
-    // {
-    //     left[0], left[1], left[2], 0.0,
-    //     up[0], up[1], up[2], 0.0,
-    //     forward[0], forward[1], forward[2], 0.0,
-    //     0.0, 0.0, 0.0, 1.0
-    // };
-
-    // float t[16];
-    // SetTranslation(-this->currentPosition[0], -this->currentPosition[1], -this->currentPosition[2], t);
-    // MultiplyMatrix(matrix, t, matrix);
 
     float matrix[16] =
     {
