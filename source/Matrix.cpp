@@ -244,6 +244,28 @@ void Add(float* a, float* b, int matrixSize, float* result)
     memcpy(result, addition, matrixSize * sizeof(float));
 }
 
+float DotProduct(float* a, float* b, int matrixSize)
+{
+    float product = 0;
+    for (int i = 0; i < matrixSize; i++)
+    {
+        product += a[i] * b[i];
+    }
+
+    return product;
+}
+
+void Negate(float* vector, int vectorSize, float* result)
+{
+    float negate[vectorSize];
+    for(int i = 0; i < vectorSize; i++)
+    {
+        negate[i] = -vector[i];
+    }
+
+    memcpy(result, negate, vectorSize * sizeof(float));
+}
+
 /**
  * @brief Substracts two matrices.
  * 

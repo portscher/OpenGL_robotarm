@@ -42,11 +42,7 @@ const float FIRST_LIMB_HEIGHT = 1.5f;
 const float SECOND_LIMB_LENGTH = 1.5f;
 const float THIRD_LIMB_LENGTH = 1.0f;
 
-GLuint ShaderProgram;
-
-/* Matrices for uniform variables in vertex shader */
-float ProjectionMatrix[16];             /* Perspective projection matrix */
-float ViewMatrix[16];                   /* Camera view matrix */
+GLuint ShaderProgram;               /* Camera view matrix */
 
 KeyboardState keyboard = {
     .up = 0,
@@ -102,7 +98,8 @@ void Display(Arm arm, Camera cam) {
 * structures into vertex and index arrays
 *
 *******************************************************************/
-void Initialize(Camera cam) {
+void Initialize(Camera cam)
+{
     /* Set background (clear) color to blue */
     glClearColor(0.0, 0.0, 0.4, 0.0);
 
