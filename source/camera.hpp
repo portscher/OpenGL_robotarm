@@ -29,12 +29,15 @@ class Camera
         void MoveDown(float speed);
         void MoveLeft(float speed);
         void MoveRight(float speed);
-        void LookAt(float* target, float* viewMatrix);
+        void LookAt(float* target);
 
     public:
         Camera();
         void UpdatePosition(KeyboardState *state);
-        void UpdateView(float* projectionMatrix, float* viewMatrix);
+        void UpdateView();
+
+        float projectionMatrix[16];
+        float viewMatrix[16];
 };
 
 #endif /* CAMERA_H */

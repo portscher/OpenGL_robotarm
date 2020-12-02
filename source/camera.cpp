@@ -2,8 +2,8 @@
 
 Camera::Camera() :
     currentPosition{ 0.0, 5.0, -25.0 },
-    front{ 0.0, 0.0, -1.0 },
-    up{ 0.0, 1.0, 0.0 },
+    front{ 0.0, 0.0, 1.0 },
+    up{ 0.0, 0.0, 1.0 },
     xAngle(-15.0),
     yAngle(0.0),
     lookingAt(0.0),
@@ -11,26 +11,30 @@ Camera::Camera() :
 {
 }
 
-void Camera::UpdateView(float* projectionMatrix, float* viewMatrix)
+void Camera::UpdateView()
 {
-    float target[3];
-    this->front[0] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
-    this->front[1] = sinf(ToRadian(this->xAngle));
-    this->front[2] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
-    NormalizeVector(this->front, 3, this->front);
-    Add(this->currentPosition, this->front, 3, target);
+    float target[3] = {
+        0,
+        0,
+        0
+    };
+    // this->front[0] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
+    // this->front[1] = sinf(ToRadian(this->xAngle));
+    // this->front[2] = cosf(ToRadian(this->xAngle)) * sinf(ToRadian(this->yAngle));
+    // NormalizeVector(this->front, 3, this->front);
+    // Add(this->currentPosition, this->front, 3, target);
 
     printf("pos: [%g,%g, %g]\nfront: [%g, %g, %g]\nlookingat: [%g, %g, %g]\n",
     this->currentPosition[0], this->currentPosition[1], this->currentPosition[2],
     this->front[0], this->front[1], this->front[2],
     target[0], target[1], target[2]);
 
-    this->LookAt(target, viewMatrix);
+    this->LookAt(target);
 
     float aspect = winWidth / winHeight;
     float nearPlane = 1.0;
     float farPlane = 50.0;
-    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, projectionMatrix);
+    SetPerspectiveMatrix(this->fieldOfView, aspect, nearPlane, farPlane, this->projectionMatrix);
 }
 
 void Camera::MoveUp(float speed)
@@ -72,24 +76,26 @@ void Camera::MoveRight(float speed)
 void Camera::UpdatePosition(KeyboardState *state) {
     float cameraSpeed = 0.2;
 
-    if (state->up)
-    {
-        this->MoveUp(cameraSpeed);
-    }
+    if (state->currentLimb == 0) {
+        if (state->up && state->currentLimb == 0)
+        {
+            this->MoveUp(cameraSpeed);
+        }
 
-    if (state->down)
-    {
-        this->MoveDown(cameraSpeed);
-    }
+        if (state->down)
+        {
+            this->MoveDown(cameraSpeed);
+        }
 
-    if (state->left)
-    {
-        this->MoveLeft(cameraSpeed);
-    }
+        if (state->left)
+        {
+            this->MoveLeft(cameraSpeed);
+        }
 
-    if (state->right)
-    {
-        this->MoveRight(cameraSpeed);
+        if (state->right)
+        {
+            this->MoveRight(cameraSpeed);
+        }
     }
 }
 
@@ -101,7 +107,7 @@ void Camera::UpdatePosition(KeyboardState *state) {
  * @param upVector The up vector of the camera.
  * @param result The resulting view matrix.
  */
-void Camera::LookAt(float* target, float* viewMatrix)
+void Camera::LookAt(float* target)
 {
     float forward[3];
     Substract(this->currentPosition, target, 3, forward);
@@ -111,37 +117,20 @@ void Camera::LookAt(float* target, float* viewMatrix)
     CrossProduct(this->up, forward, left);
     NormalizeVector(left, 3, left);
 
-    float aui[3];
-    CrossProduct(forward, left, aui);
+    float up[3];
+    CrossProduct(forward, left, up);
 
-    // float matrix[16] =
-    // {
-    //     left[0], left[1], left[2], 0.0,
-    //     up[0], up[1], up[2], 0.0,
-    //     forward[0], forward[1], forward[2], 0.0,
-    //     0.0, 0.0, 0.0, 1.0
-    // };
+    float matrix[16] =
+    {
+        left[0], left[1], left[2], 0.0,
+        up[0], up[1], up[2], 0.0,
+        forward[0], forward[1], forward[2], 0.0,
+        0.0, 0.0, 0.0, 1.0
+    };
 
-    // float t[16];
-    // SetTranslation(-position[0], -position[1], -position[2], t);
-    // MultiplyMatrix(matrix, t, matrix);
+    float t[16];
+    SetTranslation(-this->currentPosition[0], -this->currentPosition[1], -this->currentPosition[2], t);
+    MultiplyMatrix(matrix, t, matrix);
 
-    float matrix[16];
-    SetIdentityMatrix(matrix);
-    
-    matrix[0] = left[0];
-    matrix[4] = left[1];
-    matrix[8] = left[2];
-    matrix[1] = aui[0];
-    matrix[5] = aui[1];
-    matrix[9] = aui[2];
-    matrix[2] = forward[0];
-    matrix[6] = forward[1];
-    matrix[10] = forward[2];
-
-    matrix[12] = left[0] * -this->currentPosition[0] + left[1] * -this->currentPosition[1] + left[2] * -this->currentPosition[2];
-    matrix[13] = aui[0] * -this->currentPosition[0] + aui[1] * -this->currentPosition[1] + aui[2] * -this->currentPosition[2];
-    matrix[14] = forward[0] * -this->currentPosition[0] + forward[1] * -this->currentPosition[1] + forward[2] * -this->currentPosition[2];
-
-    memcpy(viewMatrix, matrix, 16 * sizeof(float));
+    memcpy(this->viewMatrix, matrix, 16 * sizeof(float));
 }
