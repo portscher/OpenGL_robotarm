@@ -1,3 +1,15 @@
+/******************************************************************
+*
+* assign_1.cpp
+*
+* Interactive Graphics and Simulation Group
+* Institute of Computer Science
+* University of Innsbruck
+*
+*******************************************************************/
+
+
+/* Standard includes */
 #include <cstdio>
 #include <iostream>
 #include <cstdlib>
@@ -10,6 +22,7 @@
 #include "Matrix.h"        /* Functions for matrix handling */
 #include "arm.hpp"
 #include "utils.hpp"
+#include "camera.hpp"
 
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -30,17 +43,27 @@ float COLOUR3[3] = {0.5f, 0.0f, 0.3f};
 
 GLuint ShaderProgram;
 
-/* Matrices for uniform variables in vertex shader */
-float ProjectionMatrix[16];             /* Perspective projection matrix */
-float ViewMatrix[16];                   /* Camera view matrix */
-
 KeyboardState keyboard = {
-        .up = 0,
-        .down = 0,
-        .left = 0,
-        .right = 0,
-        .currentLimb = 0,
-        .reset = 0
+    .up = 0,
+    .down = 0,
+    .left = 0,
+    .right = 0,
+    .currentLimb = 0,
+    .reset = 0,
+};
+
+ScrollWheelState scrollWheel
+{
+    .zoom = 45.0f,
+};
+
+MouseState mouse
+{
+    .lastX = winWidth / 2,
+    .lastY = winHeight / 2,
+    .firstMouse = 1,
+    .xAngle = 0.0f,
+    .yAngle = 0.0f,
 };
 
 /******************************************************************
@@ -54,7 +77,7 @@ KeyboardState keyboard = {
 *
 *******************************************************************/
 
-void Display(Arm arm) {
+void Display(Arm arm, Camera cam) {
     /* Clear window; color specified in 'Initialize()' */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -64,14 +87,14 @@ void Display(Arm arm) {
         fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
         exit(-1);
     }
-    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjectionMatrix);
+    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, cam.projectionMatrix);
 
     GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
     if (ViewUniform == -1) {
         fprintf(stderr, "Could not bind uniform ViewMatrix\n");
         exit(-1);
     }
-    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
+    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, cam.viewMatrix);
 
     arm.display(ShaderProgram);
 
@@ -89,7 +112,8 @@ void Display(Arm arm) {
 * structures into vertex and index arrays
 *
 *******************************************************************/
-void Initialize() {
+void Initialize(Camera cam)
+{
     /* Set background (clear) color to gray */
     glClearColor(0.1, 0.1, 0.1, 0.0);
 
@@ -102,20 +126,20 @@ void Initialize() {
     CreateShaderProgram(ShaderProgram);
 
     /* Initialize project/view matrices */
-    SetIdentityMatrix(ProjectionMatrix);
-    SetIdentityMatrix(ViewMatrix);
+    SetIdentityMatrix(cam.projectionMatrix);
+    SetIdentityMatrix(cam.viewMatrix);
 
     /* Set projection transform */
     float aspect = winWidth / winHeight;
     float nearPlane = 1.0;
     float farPlane = 50.0;
-    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, ProjectionMatrix); /* build projection matrix */
+    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, cam.projectionMatrix); /* build projection matrix */
 
     /* Set viewing transform */
-    SetTranslation(0.0, -5.0, -20.0, ViewMatrix); /* translation of the camera */
+    SetTranslation(0.0, -5.0, -20.0, cam.viewMatrix); /* translation of the camera */
     float RotationMatrix[16];
     SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
-    MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); /* assemble View matrix */
+    MultiplyMatrix(RotationMatrix, cam.viewMatrix, cam.viewMatrix); /* assemble View matrix */
 }
 
 
@@ -196,10 +220,59 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 *
 * yoffset = value of the scrolling along Y axis
 *******************************************************************/
-void scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
-    std::cout << "scrolling Y offest = " << yoffset << std::endl;
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    scrollWheel.zoom -= (float)yoffset;
+    if (scrollWheel.zoom < 1.0f)
+    {
+        scrollWheel.zoom = 1.0f;
+    }
+
+    if (scrollWheel.zoom > 45.0f)
+    {
+        scrollWheel.zoom = 45.0f; 
+    }
 }
 
+/**
+ * @brief Provides a callback for receiving the state of the mouse.
+ * 
+ * @param window The actual window
+ * @param xpos The x-position of the mouse
+ * @param ypos The y-position of the mouse.
+ * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
+ */
+void mouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+    if (mouse.firstMouse) 
+    {
+        mouse.lastX = xpos;
+        mouse.lastY = ypos;
+        mouse.firstMouse = false;
+    }
+
+    float xOffset = xpos - mouse.lastX;
+    float yOffset = mouse.lastY - ypos;
+    mouse.lastX = xpos;
+    mouse.lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    mouse.xAngle += xOffset;
+    mouse.yAngle += yOffset;
+
+    if (mouse.xAngle > 89.0f)
+    {
+        mouse.xAngle = 89.0f;
+    }
+
+    if (mouse.yAngle < -89.0f)
+    {
+        mouse.yAngle = -89.0f;
+    }
+}
 
 /******************************************************************
 *
@@ -220,9 +293,11 @@ int main(int argc, char **argv) {
     window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
     glfwSetFramebufferSizeCallback(window, Resize);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     /* Initialize timer */
     glfwSetTime(0.0f);
@@ -239,8 +314,10 @@ int main(int argc, char **argv) {
     glGenVertexArrays(1, &defaultVAO);
     glBindVertexArray(defaultVAO);
 
+    Camera camera;
+
     /* Setup scene and rendering parameters */
-    Initialize();
+    Initialize(camera);
 
     Arm arm;
     arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, COLOUR1);
@@ -254,8 +331,11 @@ int main(int argc, char **argv) {
         /* Update scene */
         arm.update(&keyboard);
 
+        camera.UpdatePosition(&keyboard, &mouse);
+        camera.UpdateZoom(&scrollWheel);
+        
         /* Draw scene */
-        Display(arm);
+        Display(arm, camera);
     }
 
     /* Close window */
