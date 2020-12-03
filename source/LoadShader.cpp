@@ -19,10 +19,10 @@
 
 /******************************************************************
 *
-* LoadShader
+* @brief This function reads and returns a string from the file
+* 'filename'; it is used to load the shader source code
 *
-* This function reads and returns a string from the file 'filename';
-* it is used to load the shader source code
+* @param filename
 *
 *******************************************************************/
 

@@ -47,6 +47,6 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 
 void CreateShaderProgram(GLuint ShaderProgram);
 
-void printMatrix(float *mat);
+float constrainAngle(float x);
 
 #endif

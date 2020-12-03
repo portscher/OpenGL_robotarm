@@ -2,7 +2,7 @@
 
 /******************************************************************
 *
-* Constructs Arm (with static base)
+* @brief Constructs a new Arm object (with static base)
 *
 *******************************************************************/
 Arm::Arm() :
@@ -16,10 +16,10 @@ Arm::Arm() :
 
 /******************************************************************
 *
-* addLimb - adds a new limb to the arm
+* @brief adds a new limb to the arm
 *
-* w = width
-* h = height
+* @param w = width
+* @param h = height
 *******************************************************************/
 void Arm::addLimb(float w, float h, float *colour)
 {
@@ -46,9 +46,10 @@ void Arm::addLimb(float w, float h, float *colour)
 
 /******************************************************************
 *
-* update - updates every limb according to the keyboard input
+* @brief updates every limb according to the keyboard input
 *
-* state = keyboard state (up, down, left, right)
+* @param state = a reference to the keyboard state
+* (up, down, left, right)
 *
 *******************************************************************/
 void Arm::update(KeyboardState *state)
@@ -68,6 +69,7 @@ void Arm::update(KeyboardState *state)
     for (int i = 0; i != limbs.size(); i++)
     {
         float transformation[16];
+        float rot;
         SetIdentityMatrix(transformation);
 
         // rotate along the axis chosen via keyboard
@@ -75,19 +77,19 @@ void Arm::update(KeyboardState *state)
         {
             if (state->up)
             {
-                float rot = limbs.at(i)->getRotation(0);
+                rot = getCurrentRotationAt(0, limbs.at(i));
                 limbs.at(i)->setRotation(0, ++rot);
             } else if (state->down)
             {
-                float rot = limbs.at(i)->getRotation(0);
+                rot = getCurrentRotationAt(0, limbs.at(i));
                 limbs.at(i)->setRotation(0, --rot);
             } else if (state->left)
             {
-                float rot = limbs.at(i)->getRotation(1);
+                rot = getCurrentRotationAt(1, limbs.at(i));
                 limbs.at(i)->setRotation(1, ++rot);
             } else if (state->right)
             {
-                float rot = limbs.at(i)->getRotation(1);
+                rot = getCurrentRotationAt(1, limbs.at(i));
                 limbs.at(i)->setRotation(1, --rot);
             }
         }
@@ -99,6 +101,19 @@ void Arm::update(KeyboardState *state)
 
         limbs.at(i)->update(transformation);
     }
+}
+
+/******************************************************************
+*
+* @brief ets the current rotation of a limb and returns its angle,
+* normalized to a range from 0 to 359 degrees
+*
+* @param axis = around which the limb is rotating
+* @param limb = a reference to the limb
+*******************************************************************/
+float Arm::getCurrentRotationAt(int axis, Limb *limb) {
+    float temp = limb->getRotation(axis);
+    return constrainAngle(temp);
 }
 
 void Arm::display(GLint ShaderProgram)

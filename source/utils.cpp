@@ -2,12 +2,16 @@
 
 /******************************************************************
 *
-* createCubeMesh
-*
-* This function creates a cube mesh and fills buffer objects with
+* @brief This function creates a cube mesh and fills buffer objects with
 * the geometry.
 *
+* @param width of the object
+* @param height of the object
+* @param colour of the object, as RGB values
+*
 *******************************************************************/
+
+
 GLuint createCubeMesh(float width, float height, float *colour)
 {
     GLuint VAO;
@@ -188,4 +192,19 @@ void CreateShaderProgram(GLuint ShaderProgram)
 
     /* Put linked shader program into drawing pipeline */
     glUseProgram(ShaderProgram);
+}
+
+
+/**
+ * @brief Constrains an angle to a range from 0 to 359 degrees.
+ *
+ * @param x = the angle to be constrained
+ *
+ */
+float constrainAngle(float x)
+{
+    x = fmodf(x, 360);
+    if (x < 0)
+        x += 360;
+    return x;
 }

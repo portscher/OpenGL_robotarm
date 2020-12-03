@@ -1,4 +1,5 @@
 #include "limb.hpp"
+#include "utils.hpp"
 
 /******************************************************************
 *
@@ -30,21 +31,25 @@ float Limb::offset()
 
 void Limb::setRotation(int axis, float deg)
 {
-    cout << "updating rotation axis " << axis << " to " << (deg < 360 ? deg : deg - 360) << endl;
+    string axis_name;
     switch (axis)
     {
         case 0:
             rotationX = deg;
+            axis_name = "x";
             break;
         case 1:
             rotationY = deg;
+            axis_name = "y";
             break;
         case 2:
             rotationZ = deg;
+            axis_name = "z";
             break;
         default:
             cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. " << endl;
     }
+    cout << "updating rotation on " << axis_name << " axis to " << (deg < 360 ? deg : deg - 360) << " degrees" << endl;
 }
 
 /** Returns the rotation angle around a given axis */

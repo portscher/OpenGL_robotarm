@@ -27,7 +27,7 @@ public:
 
     void display(GLint ShaderProgram);
 
-    Limb getLimb(int index);
+    static float getCurrentRotationAt(int axis, Limb *limb);
 };
 
 #endif /* ARM_H */

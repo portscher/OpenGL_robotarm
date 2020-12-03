@@ -68,9 +68,7 @@ MouseState mouse
 
 /******************************************************************
 *
-* Display
-*
-* This function is called when the content of the window needs to be
+* @brief This function is called when the content of the window needs to be
 * drawn/redrawn. It has been specified through 'glutDisplayFunc()';
 * Enable vertex attributes, create binding between C program and
 * attribute name in shader, provide data for uniform variables
@@ -107,9 +105,7 @@ void Display(Arm arm, Camera cam)
 
 /******************************************************************
 *
-* Initialize
-*
-* This function is called to initialize rendering elements, setup
+* @brief This function is called to initialize rendering elements, setup
 * vertex buffer objects, and to setup the vertex and fragment shader;
 * meshes are loaded from files in OBJ format; data is copied from
 * structures into vertex and index arrays
@@ -148,12 +144,10 @@ void Initialize(Camera cam)
 
 /******************************************************************
 *
-* Resize
-*
-* This function is called when the window size is changed
+* @brief This function is called when the window size is changed
 * to update the viewport dimension accordingly
 *
-* width, height = new dimension of the window after resize
+* @params width, height = new dimension of the window after resize
 *******************************************************************/
 
 void Resize(GLFWwindow *window, int width, int height)
@@ -165,12 +159,10 @@ void Resize(GLFWwindow *window, int width, int height)
 
 /******************************************************************
 *
-* keyCallback
+* @brief This function is called when a keyboard action is detected
 *
-* This function is called when a keyboard action is detected
-*
-* key = id of the key activated
-* action = id of the action (pressed, released, maintained ...)
+* @param key = id of the key activated
+* @param action = id of the action (pressed, released, maintained ...)
 *******************************************************************/
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -235,11 +227,9 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 /******************************************************************
 *
-* scrollCallback
+* @brief This function is called when mouse scrolling is detected
 *
-* This function is called when mouse scrolling is detected
-*
-* yoffset = value of the scrolling along Y axis
+* @param yoffset = value of the scrolling along Y axis
 *******************************************************************/
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
@@ -299,9 +289,7 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 
 /******************************************************************
 *
-* main
-*
-* Main function to setup GLUT, GLEW, and enter rendering loop
+* @brief Main function to setup GLUT, GLEW, and enter rendering loop
 *
 *******************************************************************/
 
