@@ -14,8 +14,10 @@
 #ifndef OBJ_PARSER_H
 #define OBJ_PARSER_H
 
+#include <string>
 #include "List.h"
 #include "StringExtra.h"
+#include "cstring"
 
 #define OBJ_FILENAME_LENGTH 500
 #define MATERIAL_NAME_SIZE 255
@@ -157,7 +159,7 @@ typedef struct
 	obj_camera *camera;
 } obj_scene_data;
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename);
+int parse_obj_scene(obj_scene_data *data_out, const char* filename);
 void delete_obj_data(obj_scene_data *data_out);
 
 #endif

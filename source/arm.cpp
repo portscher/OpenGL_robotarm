@@ -1,4 +1,5 @@
 #include "arm.hpp"
+#include "Vector.hpp"
 
 /******************************************************************
 *
@@ -6,12 +7,13 @@
 *
 *******************************************************************/
 Arm::Arm() :
-        internal{0}, height(.25), width(2.5)
+        internal{0}
 {
     // base
-    float baseColour[3] = {0.9f, 0.9f, 0.5f};
-    VAO = createCubeMesh(width, height, baseColour);
+    Vector baseColour = {0.9f, 0.9f, 0.5f};
+    VAO = readMeshFile("../models/base.obj", 0.4, baseColour);
     SetIdentityMatrix(internal);
+    SetRotationX(90, internal);
 }
 
 /******************************************************************
@@ -21,27 +23,18 @@ Arm::Arm() :
 * @param w = width
 * @param h = height
 *******************************************************************/
-void Arm::addLimb(float w, float h, float *colour)
+void Arm::addLimb(std::string filename, float offset, Vector colour)
 {
     int currentIndex = limbs.size() - 1;
 
-    // offset relative to previous limb
-    float offset = h;
-
     float center = 0;
-    if (limbs.empty())
-    {
-        center = width / 2;
-        offset = 0;
-    }
 
-    cout << "creating limb: " <<
-         "(x, y, z): " << center << ", " << offset << ", 0. " <<
-         "(w, h): " << w << ", " << h << endl;
+    std::cout << "creating limb: " <<
+         "(x, y, z): " << center << ", " << offset << ", 0. " << std::endl;
 
     float pos[] = {center, offset, center};
-    float size[] = {w, h};
-    limbs.push_back(new Limb(currentIndex, pos, size, colour));
+
+    limbs.push_back(new Limb(currentIndex, filename, pos, colour));
 }
 
 /******************************************************************
@@ -111,7 +104,8 @@ void Arm::update(KeyboardState *state)
 * @param axis = around which the limb is rotating
 * @param limb = a reference to the limb
 *******************************************************************/
-float Arm::getCurrentRotationAt(int axis, Limb *limb) {
+float Arm::getCurrentRotationAt(int axis, Limb *limb)
+{
     float temp = limb->getRotation(axis);
     return constrainAngle(temp);
 }

@@ -9,13 +9,13 @@
 #include <GLFW/glfw3.h>
 #include "utils.hpp"
 #include "Matrix.h"
-
-using namespace std;
+#include "Vector.hpp"
 
 class Limb
 {
 private:
     int ID;
+    std::string filename;
     GLint VAO;
 
     float rotationX;
@@ -28,9 +28,6 @@ private:
     float _offset; // for now, it is only the y-offset
 
     float position[3];
-    float length;
-    float width;
-
     float colour[3];
 
     // internal is used for internal transformations like scale
@@ -40,7 +37,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, const float position[3], float size[2], float colour[3]);
+    Limb(int ID, std::string filename, float position[3], Vector colour);
 
     void setRotation(int axis, float deg);
 
@@ -54,7 +51,6 @@ public:
 
     void display(GLint program);
 
-    float offset();
 };
 
 #endif

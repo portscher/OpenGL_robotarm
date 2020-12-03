@@ -21,7 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "OBJParser.h"
+#include "OBJParser.hpp"
 #define WHITESPACE " \t\n\r"
 
 
@@ -319,7 +319,7 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 
 }
 
-int obj_parse_obj_file(obj_growable_scene_data *growable_data, char *filename)
+int obj_parse_obj_file(obj_growable_scene_data *growable_data, const char *filename)
 {
 
 	FILE* obj_file_stream;
@@ -568,7 +568,7 @@ void obj_copy_to_out_storage(obj_scene_data *data_out, obj_growable_scene_data *
 	data_out->camera = growable_data->camera;
 }
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename)
+int parse_obj_scene(obj_scene_data *data_out, const char *filename)
 {
 	obj_growable_scene_data growable_data;
 

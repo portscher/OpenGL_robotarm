@@ -1,6 +1,6 @@
 /******************************************************************
 *
-* Vector.h
+* Vector.hpp
 *
 * Description: Helper routine for vector computations.
 *

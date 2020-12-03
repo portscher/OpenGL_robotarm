@@ -33,13 +33,12 @@ GLFWwindow *window;
 
 GLuint defaultVAO;
 
-const float THICKNESS = .4;
-const float FIRST_LIMB_HEIGHT = 2.5f;
-float COLOUR1[3] = {0.0f, 0.3f, 0.5f};
-const float SECOND_LIMB_LENGTH = 2.5f;
-float COLOUR2[3] = {0.3f, 0.5f, 0.0f};
-const float THIRD_LIMB_LENGTH = 2.0f;
-float COLOUR3[3] = {0.5f, 0.0f, 0.3f};
+Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
+std::string firstLimbObj = "../models/bottle.obj";
+Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
+std::string secondLimbObj = "../models/bottle.obj";
+Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
+std::string thirdLimbObj = "../models/bottle.obj";
 
 GLuint ShaderProgram;
 
@@ -333,9 +332,9 @@ int main(int argc, char **argv)
     Initialize(camera);
 
     Arm arm;
-    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, COLOUR1);
-    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH, COLOUR2);
-    arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH, COLOUR3);
+    arm.addLimb(firstLimbObj, 1, COLOUR1);
+    arm.addLimb(secondLimbObj, 1.7, COLOUR2);
+    arm.addLimb(thirdLimbObj, 1.7, COLOUR3);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))

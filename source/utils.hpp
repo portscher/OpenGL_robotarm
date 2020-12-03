@@ -3,15 +3,17 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <cstdio>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "LoadShader.h"    /* Loading function for shader code */
+#include "Vector.hpp"
 
 /* Indices to vertex attributes; in this case position only */
 enum DataID
 {
-    vPosition = 0, vColor = 1
+    vPosition = 0, vColor = 1, vNormal = 2
 };
 
 typedef struct keyboard
@@ -25,7 +27,7 @@ typedef struct keyboard
     int reset;
 } KeyboardState;
 
-GLuint createCubeMesh(float width, float height, float *colour);
+
 
 typedef struct scrollWheel
 {
@@ -42,6 +44,8 @@ typedef struct mouse
 } MouseState;
 
 GLuint createCubeMesh(float width, float height);
+GLuint createCubeMesh(float width, float height, float *colour);
+GLuint readMeshFile(std::string filename, float scale, Vector rgb);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 

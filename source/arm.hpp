@@ -7,21 +7,18 @@
 #include "limb.hpp"
 #include "utils.hpp"
 
-using namespace std;
-
 class Arm
 {
 private:
-    vector<Limb *> limbs;
-    GLint VAO;
+    std::vector<Limb *> limbs;
+    GLuint VAO;
     float internal[16];
-    float height;
-    float width;
+    std::string filename;
 
 public:
     Arm();
 
-    void addLimb(float width, float height, float *colour);
+    void addLimb(std::string filename, float offset, Vector colour);
 
     void update(KeyboardState *state);
 

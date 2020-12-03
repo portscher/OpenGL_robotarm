@@ -1,21 +1,24 @@
 #include "limb.hpp"
 #include "utils.hpp"
+#include "Vector.hpp"
 
 /******************************************************************
 *
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(int _ID, const float _position[3], float size[2], float colour[3]) :
+Limb::Limb(int _ID, std::string filename, float _position[3], Vector colour) :
         rotationX(0), rotationY(0), rotationZ(0),
-        position{0}, length(size[1]), width(size[0]),
+        position{0},
         internal{0}, transformation{0}, model{0}
 {
 
+    float scale = 0.0025f;
     ID = _ID;
-    VAO = createCubeMesh(width, length, colour);
 
+    VAO = readMeshFile(filename, scale, colour);
     SetIdentityMatrix(internal);
+    SetRotationZ(270, internal);
     SetIdentityMatrix(transformation);
     SetIdentityMatrix(model);
     // WTH? anyways.. it works
@@ -24,14 +27,9 @@ Limb::Limb(int _ID, const float _position[3], float size[2], float colour[3]) :
     position[2] = _position[2];
 }
 
-float Limb::offset()
-{
-    return length;
-}
-
 void Limb::setRotation(int axis, float deg)
 {
-    string axis_name;
+    std::string axis_name;
     switch (axis)
     {
         case 0:
@@ -47,9 +45,9 @@ void Limb::setRotation(int axis, float deg)
             axis_name = "z";
             break;
         default:
-            cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. " << endl;
+            std::cout << "setRotation on " << ID << " can't be set, " << axis << " doesn't exist. " << std::endl;
     }
-    cout << "updating rotation on " << axis_name << " axis to " << (deg < 360 ? deg : deg - 360) << " degrees" << endl;
+    std::cout << "updating rotation on " << axis_name << " axis to " << (deg < 360 ? deg : deg - 360) << " degrees" << std::endl;
 }
 
 /** Returns the rotation angle around a given axis */
@@ -64,7 +62,7 @@ float Limb::getRotation(int axis)
         case 2:
             return rotationZ;
         default:
-            cout << "getRotation on " << ID << " cant return a value" << endl;
+            std::cout << "getRotation on " << ID << " cant return a value" << std::endl;
             return 0;
     }
 }
