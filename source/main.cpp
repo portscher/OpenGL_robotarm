@@ -44,27 +44,27 @@ float COLOUR3[3] = {0.5f, 0.0f, 0.3f};
 GLuint ShaderProgram;
 
 KeyboardState keyboard = {
-    .up = 0,
-    .down = 0,
-    .left = 0,
-    .right = 0,
-    .currentLimb = 0,
-    .reset = 0,
+        .up = 0,
+        .down = 0,
+        .left = 0,
+        .right = 0,
+        .currentLimb = 0,
+        .reset = 0,
 };
 
 ScrollWheelState scrollWheel
-{
-    .zoom = 45.0f,
-};
+        {
+                .zoom = 45.0f,
+        };
 
 MouseState mouse
-{
-    .lastX = winWidth / 2,
-    .lastY = winHeight / 2,
-    .firstMouse = 1,
-    .xAngle = 0.0f,
-    .yAngle = 0.0f,
-};
+        {
+                .lastX = winWidth / 2,
+                .lastY = winHeight / 2,
+                .firstMouse = 1,
+                .xAngle = 0.0f,
+                .yAngle = 0.0f,
+        };
 
 /******************************************************************
 *
@@ -77,20 +77,23 @@ MouseState mouse
 *
 *******************************************************************/
 
-void Display(Arm arm, Camera cam) {
+void Display(Arm arm, Camera cam)
+{
     /* Clear window; color specified in 'Initialize()' */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Associate program with uniform shader matrices */
     GLint projectionUniform = glGetUniformLocation(ShaderProgram, "ProjectionMatrix");
-    if (projectionUniform == -1) {
+    if (projectionUniform == -1)
+    {
         fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
         exit(-1);
     }
     glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, cam.projectionMatrix);
 
     GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
-    if (ViewUniform == -1) {
+    if (ViewUniform == -1)
+    {
         fprintf(stderr, "Could not bind uniform ViewMatrix\n");
         exit(-1);
     }
@@ -153,7 +156,8 @@ void Initialize(Camera cam)
 * width, height = new dimension of the window after resize
 *******************************************************************/
 
-void Resize(GLFWwindow *window, int width, int height) {
+void Resize(GLFWwindow *window, int width, int height)
+{
     /* update viewport with new dimensions */
     glViewport(0, 0, width, height);
 }
@@ -168,43 +172,60 @@ void Resize(GLFWwindow *window, int width, int height) {
 * key = id of the key activated
 * action = id of the action (pressed, released, maintained ...)
 *******************************************************************/
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
 
-    if (key == GLFW_KEY_W) {  // forwards
-        if (action == GLFW_PRESS) {
+    if (key == GLFW_KEY_W)
+    {  // forwards
+        if (action == GLFW_PRESS)
+        {
             keyboard.up = 1;
-        } else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE)
+        {
             keyboard.up = 0;
         }
-    } else if (key == GLFW_KEY_S) { // backwards
-        if (action == GLFW_PRESS) {
+    } else if (key == GLFW_KEY_S)
+    { // backwards
+        if (action == GLFW_PRESS)
+        {
             keyboard.down = 1;
-        } else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE)
+        {
             keyboard.down = 0;
         }
-    } else if (key == GLFW_KEY_A) { // left
-        if (action == GLFW_PRESS) {
+    } else if (key == GLFW_KEY_A)
+    { // left
+        if (action == GLFW_PRESS)
+        {
             keyboard.left = 1;
-        } else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE)
+        {
             keyboard.left = 0;
         }
-    } else if (key == GLFW_KEY_D) { // right
-        if (action == GLFW_PRESS) {
+    } else if (key == GLFW_KEY_D)
+    { // right
+        if (action == GLFW_PRESS)
+        {
             keyboard.right = 1;
-        } else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE)
+        {
             keyboard.right = 0;
         }
     } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
-               && action == GLFW_PRESS) {
+               && action == GLFW_PRESS)
+    {
         keyboard.currentLimb = key - 48; // GLFW_KEY_0 = 48
-    } else if(key == GLFW_KEY_R) {
-        if (action == GLFW_PRESS) {
+    } else if (key == GLFW_KEY_R)
+    {
+        if (action == GLFW_PRESS)
+        {
             keyboard.reset = 1;
-        } else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE)
+        {
             keyboard.reset = 0;
         }
-    }
-    else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+    } else if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+    {
         std::cout << "Bye!" << std::endl;
         exit(0);
     }
@@ -222,15 +243,17 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 *******************************************************************/
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    scrollWheel.zoom -= (float)yoffset;
+    scrollWheel.zoom -= (float) yoffset;
+    // limit zoom to a minimum factor of 1.0
     if (scrollWheel.zoom < 1.0f)
     {
         scrollWheel.zoom = 1.0f;
     }
 
+    // limit zoom to a maximum factor of 45.0
     if (scrollWheel.zoom > 45.0f)
     {
-        scrollWheel.zoom = 45.0f; 
+        scrollWheel.zoom = 45.0f;
     }
 }
 
@@ -244,7 +267,7 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
  */
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
-    if (mouse.firstMouse) 
+    if (mouse.firstMouse)
     {
         mouse.lastX = xpos;
         mouse.lastY = ypos;
@@ -282,7 +305,8 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 *
 *******************************************************************/
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
     /* Initialize GLFW and create a window */
     glfwInit();
@@ -293,7 +317,7 @@ int main(int argc, char **argv) {
     window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, Resize);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetScrollCallback(window, scrollCallback);
@@ -305,7 +329,8 @@ int main(int argc, char **argv) {
     /* Initialize GL extension wrangler */
     glewExperimental = true;
     GLenum res = glewInit();
-    if (res != GLEW_OK) {
+    if (res != GLEW_OK)
+    {
         fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
         return 1;
     }
@@ -325,7 +350,8 @@ int main(int argc, char **argv) {
     arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH, COLOUR3);
 
     /* Rendering loop */
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         glfwPollEvents();
 
         /* Update scene */
@@ -333,7 +359,7 @@ int main(int argc, char **argv) {
 
         camera.UpdatePosition(&keyboard, &mouse);
         camera.UpdateZoom(&scrollWheel);
-        
+
         /* Draw scene */
         Display(arm, camera);
     }

@@ -8,7 +8,8 @@
 * the geometry.
 *
 *******************************************************************/
-GLuint createCubeMesh(float width, float height, float* colour) {
+GLuint createCubeMesh(float width, float height, float *colour)
+{
     GLuint VAO;
     GLuint VBO;
     GLuint IBO;
@@ -16,15 +17,15 @@ GLuint createCubeMesh(float width, float height, float* colour) {
 
     float depth = width;
     GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            0.,     0.,     depth,
-            width,  0.,     depth,
-            width,  height, depth,
-            0.,     height, depth,
+            0., 0., depth,
+            width, 0., depth,
+            width, height, depth,
+            0., height, depth,
 
-            0.,     0.,     0.,
-            width,  0.,     0.,
-            width,  height, 0.,
-            0.,     height, 0.,
+            0., 0., 0.,
+            width, 0., 0.,
+            width, height, 0.,
+            0., height, 0.,
     };
 
     GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
@@ -97,11 +98,13 @@ GLuint createCubeMesh(float width, float height, float* colour) {
 * This function creates and adds individual shaders
 *
 *******************************************************************/
-void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType) {
+void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType)
+{
     /* Create shader object */
     GLuint ShaderObj = glCreateShader(ShaderType);
 
-    if (ShaderObj == 0) {
+    if (ShaderObj == 0)
+    {
         fprintf(stderr, "Error creating shader type %d\n", ShaderType);
         exit(0);
     }
@@ -116,7 +119,8 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
     glCompileShader(ShaderObj);
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
 
-    if (!success) {
+    if (!success)
+    {
         glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
@@ -135,8 +139,10 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 * is put into the rendering pipeline
 *
 *******************************************************************/
-void CreateShaderProgram(GLuint ShaderProgram) {
-    if (ShaderProgram == 0) {
+void CreateShaderProgram(GLuint ShaderProgram)
+{
+    if (ShaderProgram == 0)
+    {
         fprintf(stderr, "Error creating shader program\n");
         exit(1);
     }
@@ -162,7 +168,8 @@ void CreateShaderProgram(GLuint ShaderProgram) {
     /* Check results of linking step */
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
 
-    if (Success == 0) {
+    if (Success == 0)
+    {
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
@@ -172,7 +179,8 @@ void CreateShaderProgram(GLuint ShaderProgram) {
     glValidateProgram(ShaderProgram);
     glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
 
-    if (!Success) {
+    if (!Success)
+    {
         glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
@@ -180,15 +188,4 @@ void CreateShaderProgram(GLuint ShaderProgram) {
 
     /* Put linked shader program into drawing pipeline */
     glUseProgram(ShaderProgram);
-}
-
-void printMatrix(float* mat)
-{
-    int i;
-    for(i = 0; i < 16; i++) {
-        if (fmod(i, 4) == 0) {
-            printf("\n");
-        }
-        printf("%g ", mat[i]);
-    }
 }

@@ -8,7 +8,8 @@
 Limb::Limb(int _ID, const float _position[3], float size[2], float colour[3]) :
         rotationX(0), rotationY(0), rotationZ(0),
         position{0}, length(size[1]), width(size[0]),
-        internal{0}, transformation{0}, model{0} {
+        internal{0}, transformation{0}, model{0}
+{
 
     ID = _ID;
     VAO = createCubeMesh(width, length, colour);
@@ -22,14 +23,16 @@ Limb::Limb(int _ID, const float _position[3], float size[2], float colour[3]) :
     position[2] = _position[2];
 }
 
-float Limb::offset() {
+float Limb::offset()
+{
     return length;
 }
 
-// TODO axis could be an enum
-void Limb::setRotation(int axis, float deg) {
-    cout << "updating rotation axis " << axis << " to " << deg << endl;
-    switch (axis) {
+void Limb::setRotation(int axis, float deg)
+{
+    cout << "updating rotation axis " << axis << " to " << (deg < 360 ? deg : deg - 360) << endl;
+    switch (axis)
+    {
         case 0:
             rotationX = deg;
             break;
@@ -45,8 +48,10 @@ void Limb::setRotation(int axis, float deg) {
 }
 
 /** Returns the rotation angle around a given axis */
-float Limb::getRotation(int axis) {
-    switch (axis) {
+float Limb::getRotation(int axis)
+{
+    switch (axis)
+    {
         case 0:
             return rotationX;
         case 1:
@@ -59,12 +64,14 @@ float Limb::getRotation(int axis) {
     }
 }
 
-void Limb::setAngle(int deg) {
+void Limb::setAngle(int deg)
+{
     angle = deg;
 }
 
 /** Returns the transformation matrix of a limb */
-void Limb::getTransformation(float *result) {
+void Limb::getTransformation(float *result)
+{
     memcpy(result, transformation, 16 * sizeof(float));
 }
 
@@ -75,7 +82,8 @@ void Limb::getTransformation(float *result) {
 *
 * parentTransform = transformation matrix of the parent limb
 *******************************************************************/
-void Limb::update(float *parentTransform) {
+void Limb::update(float *parentTransform)
+{
     // reset transformations
     SetIdentityMatrix(model);
     SetIdentityMatrix(transformation);
@@ -105,13 +113,15 @@ void Limb::update(float *parentTransform) {
     MultiplyMatrix(transformation, model, transformation);
 }
 
-void Limb::display(GLint ShaderProgram) {
+void Limb::display(GLint ShaderProgram)
+{
     GLint size;
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
     // TODO this is actually the transformation
     GLint ModelUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
-    if (ModelUniform == -1) {
+    if (ModelUniform == -1)
+    {
         fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", ID);
         exit(-1);
     }

@@ -9,11 +9,13 @@
 #include "LoadShader.h"    /* Loading function for shader code */
 
 /* Indices to vertex attributes; in this case position only */
-enum DataID {
+enum DataID
+{
     vPosition = 0, vColor = 1
 };
 
-typedef struct keyboard {
+typedef struct keyboard
+{
     int up;
     int down;
     int left;
@@ -23,7 +25,8 @@ typedef struct keyboard {
     int reset;
 } KeyboardState;
 
-GLuint createCubeMesh(float width, float height, float* colour);
+GLuint createCubeMesh(float width, float height, float *colour);
+
 typedef struct scrollWheel
 {
     float zoom;
@@ -44,6 +47,6 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 
 void CreateShaderProgram(GLuint ShaderProgram);
 
-void printMatrix(float* mat);
+void printMatrix(float *mat);
 
 #endif

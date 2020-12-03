@@ -13,31 +13,39 @@
 extern float winWidth;
 extern float winHeight;
 
-using namespace  std;
+using namespace std;
 
-class Camera 
+class Camera
 {
-    private:
-        float currentPosition[3];
-        float direction[3];
-        float up[3];
-        float xAngle;
-        float yAngle;
-        float fieldOfView;
-        void MoveUp(float speed);
-        void MoveDown(float speed);
-        void MoveLeft(float speed);
-        void MoveRight(float speed);
-        void LookAt(float* target);
+private:
+    float currentPosition[3];
+    float direction[3];
+    float up[3];
+    float xAngle;
+    float yAngle;
+    float fieldOfView;
 
-    public:
-        Camera();
-        void UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState);
-        void UpdateView();
-        void UpdateZoom(ScrollWheelState *state);
+    void MoveUp(float speed);
 
-        float projectionMatrix[16];
-        float viewMatrix[16];
+    void MoveDown(float speed);
+
+    void MoveLeft(float speed);
+
+    void MoveRight(float speed);
+
+    void LookAt(float *target);
+
+public:
+    Camera();
+
+    void UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState);
+
+    void UpdateView();
+
+    void UpdateZoom(ScrollWheelState *state);
+
+    float projectionMatrix[16];
+    float viewMatrix[16];
 };
 
 #endif /* CAMERA_H */

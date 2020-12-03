@@ -43,11 +43,17 @@ public:
     Limb(int ID, const float position[3], float size[2], float colour[3]);
 
     void setRotation(int axis, float deg);
+
     float getRotation(int axis);
+
     void getTransformation(float *transformation);
+
     void setAngle(int deg);
+
     void update(float *transformation);
+
     void display(GLint program);
+
     float offset();
 };
 

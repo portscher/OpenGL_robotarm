@@ -9,7 +9,8 @@
 
 using namespace std;
 
-class Arm {
+class Arm
+{
 private:
     vector<Limb *> limbs;
     GLint VAO;
@@ -20,7 +21,7 @@ private:
 public:
     Arm();
 
-    void addLimb(float width, float height, float* colour);
+    void addLimb(float width, float height, float *colour);
 
     void update(KeyboardState *state);
 

@@ -26,7 +26,8 @@
 *
 *******************************************************************/
 
-void SetIdentityMatrix(float *result) {
+void SetIdentityMatrix(float *result)
+{
     float identity[16] = {
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
@@ -43,7 +44,8 @@ void SetIdentityMatrix(float *result) {
 *
 *******************************************************************/
 
-void SetScaleMatrix(float scalex, float scaley, float scalez, float *result) {
+void SetScaleMatrix(float scalex, float scaley, float scalez, float *result)
+{
     float scale[16] = {
             scalex, 0.0, 0.0, 0.0,
             0.0, scaley, 0.0, 0.0,
@@ -60,7 +62,8 @@ void SetScaleMatrix(float scalex, float scaley, float scalez, float *result) {
 *
 *******************************************************************/
 
-void SetRotationX(float anglex, float *result) {
+void SetRotationX(float anglex, float *result)
+{
     anglex = M_PI / 180 * anglex;   /* Conversion angle from degree to radians */
 
     float temp[16] =
@@ -81,7 +84,8 @@ void SetRotationX(float anglex, float *result) {
 *
 *******************************************************************/
 
-void SetRotationY(float angley, float *result) {
+void SetRotationY(float angley, float *result)
+{
     angley = M_PI / 180 * angley;   /* Conversion angle from degree to radians */
 
     float temp[16] =
@@ -102,7 +106,8 @@ void SetRotationY(float angley, float *result) {
 *
 *******************************************************************/
 
-void SetRotationZ(float anglez, float *result) {
+void SetRotationZ(float anglez, float *result)
+{
     anglez = M_PI / 180 * anglez;   /* Conversion angle from degree to radian */
 
     float temp[16] =
@@ -123,7 +128,8 @@ void SetRotationZ(float anglez, float *result) {
 *
 *******************************************************************/
 
-void SetTranslation(float x, float y, float z, float *result) {
+void SetTranslation(float x, float y, float z, float *result)
+{
     float temp[16] =
             {
                     1.0, 0.0, 0.0, x,
@@ -142,7 +148,8 @@ void SetTranslation(float x, float y, float z, float *result) {
 *
 *******************************************************************/
 
-void MultiplyMatrix(float *m1, float *m2, float *result) {
+void MultiplyMatrix(float *m1, float *m2, float *result)
+{
     int i;
     float temp[16];
 
@@ -180,7 +187,8 @@ void MultiplyMatrix(float *m1, float *m2, float *result) {
 *******************************************************************/
 
 void SetPerspectiveMatrix(float fov, float aspect, float nearPlane,
-                          float farPlane, float *result) {
+                          float farPlane, float *result)
+{
     float f = 1.0 / tan(fov * 3.1415926 / 360.0);
     float c1 = -(farPlane + nearPlane) / (farPlane - nearPlane);
     float c2 = -(2.0 * farPlane * nearPlane) / (farPlane - nearPlane);
@@ -204,10 +212,10 @@ void SetPerspectiveMatrix(float fov, float aspect, float nearPlane,
  * @param vectorSize The size of the vector.
  * @param result The array where the result of the multiplication will be stored.
  */
-void ScalarMultiplication(float scalar, float* vector, int vectorSize, float* result)
+void ScalarMultiplication(float scalar, float *vector, int vectorSize, float *result)
 {
     float multiplication[vectorSize];
-    for(int i = 0; i < vectorSize; i++)
+    for (int i = 0; i < vectorSize; i++)
     {
         multiplication[i] = vector[i] * scalar;
     }
@@ -223,10 +231,10 @@ void ScalarMultiplication(float scalar, float* vector, int vectorSize, float* re
  * @param matrixSize The size of each matrix itself.
  * @param result The array where the result of the addition will be stored.
  */
-void Add(float* a, float* b, int matrixSize, float* result)
+void Add(float *a, float *b, int matrixSize, float *result)
 {
     float addition[matrixSize];
-    for(int i = 0; i < matrixSize; i++)
+    for (int i = 0; i < matrixSize; i++)
     {
         addition[i] = a[i] + b[i];
     }
@@ -243,7 +251,7 @@ void Add(float* a, float* b, int matrixSize, float* result)
  * @return float The resulting dot product of both matrices.
  * @remarks Formular taken from https://en.wikipedia.org/wiki/Dot_product
  */
-float DotProduct(float* a, float* b, int matrixSize)
+float DotProduct(float *a, float *b, int matrixSize)
 {
     float product = 0;
     for (int i = 0; i < matrixSize; i++)
@@ -261,10 +269,10 @@ float DotProduct(float* a, float* b, int matrixSize)
  * @param vectorSize The size of the vector.
  * @param result The array where the negated vector will be stored.
  */
-void Negate(float* vector, int vectorSize, float* result)
+void Negate(float *vector, int vectorSize, float *result)
 {
     float negate[vectorSize];
-    for(int i = 0; i < vectorSize; i++)
+    for (int i = 0; i < vectorSize; i++)
     {
         negate[i] = -vector[i];
     }
@@ -280,10 +288,10 @@ void Negate(float* vector, int vectorSize, float* result)
  * @param matrixSize The size of each matrix itself.
  * @param result The array where the result of the substraction will be stored.
  */
-void Substract(float* a, float* b, int matrixSize, float* result)
+void Substract(float *a, float *b, int matrixSize, float *result)
 {
     float substraction[matrixSize];
-    for(int i = 0; i < matrixSize; i++)
+    for (int i = 0; i < matrixSize; i++)
     {
         substraction[i] = a[i] - b[i];
     }
@@ -300,14 +308,14 @@ void Substract(float* a, float* b, int matrixSize, float* result)
  * @note The used formular for caluclating the cross product of two matrices 
  * can be found at https://de.wikipedia.org/wiki/Kreuzprodukt
  */
-void CrossProduct(float* a, float* b, float* result)
+void CrossProduct(float *a, float *b, float *result)
 {
     float crossProduct[3] =
-    {
-        (a[1] * b[2]) - (a[2] * b[1]),
-        (a[2] * b[0]) - (a[0] * b[2]),
-        (a[0] * b[1]) - (a[1] * b[0]),
-    };
+            {
+                    (a[1] * b[2]) - (a[2] * b[1]),
+                    (a[2] * b[0]) - (a[0] * b[2]),
+                    (a[0] * b[1]) - (a[1] * b[0]),
+            };
 
     memcpy(result, crossProduct, 3 * sizeof(float));
 }
@@ -319,17 +327,17 @@ void CrossProduct(float* a, float* b, float* result)
  * @param vectorSize The size of the vector.
  * @param result The array that represents the normalized vector.
  */
-void NormalizeVector(float* vector, int vectorSize, float* result)
+void NormalizeVector(float *vector, int vectorSize, float *result)
 {
-    double sum = 0; 
-    for(int i = 0; i < vectorSize; i++)
+    double sum = 0;
+    for (int i = 0; i < vectorSize; i++)
     {
         sum += vector[i] * vector[i];
     }
 
     float length = sqrt(sum);
     float normalized[vectorSize];
-    for(int i = 0; i < vectorSize; i++)
+    for (int i = 0; i < vectorSize; i++)
     {
         if (length == 0)
         {

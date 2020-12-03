@@ -5,12 +5,12 @@
  * 
  */
 Camera::Camera() :
-    currentPosition{ 0.0, 0.0, -10.0 },
-    direction{ 0.0, 0.0, 0.0 },
-    up{ 0.0, 1.0, 0.0 },
-    xAngle(-90.0f),
-    yAngle(0.0f),
-    fieldOfView(45.0)
+        currentPosition{0.0, 0.0, -17.0},
+        direction{0.0, 0.0, 0.0},
+        up{0.0, 1.0, 0.0},
+        xAngle(-90.0f),
+        yAngle(0.0f),
+        fieldOfView(45.0)
 {
 }
 
@@ -19,7 +19,7 @@ Camera::Camera() :
  * 
  * @param state The current state of the scroll wheel.
  */
-void Camera::UpdateZoom(ScrollWheelState* state)
+void Camera::UpdateZoom(ScrollWheelState *state)
 {
     this->fieldOfView = state->zoom;
     float aspect = winWidth / winHeight;
@@ -37,11 +37,11 @@ void Camera::UpdateView()
 {
     // Fixing the target to the point of origin.
     float target[3] = {
-        0,
-        0,
-        0
+            0,
+            0,
+            0
     };
-    
+
     Substract(this->currentPosition, target, 3, this->direction);
     NormalizeVector(this->direction, 3, this->direction);
 
@@ -70,7 +70,7 @@ void Camera::MoveDown(float speed)
     float temp[3];
     ScalarMultiplication(speed, this->direction, 3, temp);
     Substract(this->currentPosition, temp, 3, this->currentPosition);
-} 
+}
 
 /**
  * @brief Moves the camera left.
@@ -104,7 +104,8 @@ void Camera::MoveRight(float speed)
  * @brief Updates the position of the camera object.
  * 
  */
-void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState) {
+void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState)
+{
     float cameraSpeed = 0.2;
 
     if (keyboardState->currentLimb == 0)
@@ -145,7 +146,7 @@ void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState
  * @param result The resulting view matrix.
  * @remarks Based on the article at https://www.geertarien.com/blog/2017/07/30/breakdown-of-the-lookAt-function-in-OpenGL/
  */
-void Camera::LookAt(float* target)
+void Camera::LookAt(float *target)
 {
     float zAxis[3];
     Substract(target, this->currentPosition, 3, zAxis);
@@ -160,12 +161,12 @@ void Camera::LookAt(float* target)
     Negate(zAxis, 3, zAxis);
 
     float matrix[16] =
-    {
-        xAxis[0], xAxis[1], xAxis[2], -DotProduct(xAxis, this->currentPosition, 3),
-        yAxis[0], yAxis[1], yAxis[2], -DotProduct(yAxis, this->currentPosition, 3),
-        zAxis[0], zAxis[1], zAxis[2], -DotProduct(zAxis, this->currentPosition, 3),
-        0, 0, 0, 1
-    };
+            {
+                    xAxis[0], xAxis[1], xAxis[2], -DotProduct(xAxis, this->currentPosition, 3),
+                    yAxis[0], yAxis[1], yAxis[2], -DotProduct(yAxis, this->currentPosition, 3),
+                    zAxis[0], zAxis[1], zAxis[2], -DotProduct(zAxis, this->currentPosition, 3),
+                    0, 0, 0, 1
+            };
 
     memcpy(this->viewMatrix, matrix, 16 * sizeof(float));
 }
