@@ -123,7 +123,6 @@ void Limb::display(GLint ShaderProgram)
     GLint size;
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-    // TODO this is actually the transformation
     GLint ModelUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
     if (ModelUniform == -1)
     {

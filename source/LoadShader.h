@@ -14,6 +14,6 @@
 #ifndef __LOAD_SHADER_H__
 #define __LOAD_SHADER_H__
 
-const char *LoadShader(const char *filename);
+const char* LoadShader(const char* filename);
 
-#endif
+#endif // __LOAD_SHADER_H__

@@ -11,31 +11,36 @@
 *******************************************************************/
 
 /* Standard includes */
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 /*----------------------------------------------------------------*/
 
 
 /******************************************************************
 *
-* @brief This function reads and returns a string from the file
-* 'filename'; it is used to load the shader source code
+* LoadShader
 *
-* @param filename
+* This function reads and returns a string from the file 'filename';
+* it is used to load the shader source code
 *
 *******************************************************************/
 
-const char *LoadShader(const char *filename)
+const char* LoadShader(const char* filename)
 {
 #ifdef WIN32
     FILE* infile;
     fopen_s(&infile, filename, "rb");
 #else
-    FILE *infile = fopen(filename, "rb");
+    FILE* infile = fopen(filename, "rb");
 #endif // WIN32
 
-    if (!infile)
+    if (!infile) 
     {
         fprintf(stderr, "Could not open shader file %s\n", filename);
         exit(0);
@@ -45,12 +50,12 @@ const char *LoadShader(const char *filename)
     int len = ftell(infile);
     fseek(infile, 0, SEEK_SET);
 
-    char *source = (char *) malloc(sizeof(char) * (len + 1));
+    char* source = (char*)malloc(sizeof(char) * (len+1));
 
     fread(source, 1, len, infile);
     fclose(infile);
 
     source[len] = 0;
 
-    return (const char *) (source);
+    return (const char*)(source);
 }
