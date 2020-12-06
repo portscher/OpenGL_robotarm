@@ -301,7 +301,7 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
+    window = glfwCreateWindow(winWidth, winHeight, "Banana Arm", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
