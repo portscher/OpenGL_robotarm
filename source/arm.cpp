@@ -11,7 +11,7 @@ Arm::Arm() :
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    VAO = readMeshFile("../models/smp-base.obj", 1.5f, baseColour);
+    VAO = readMeshFile("../models/base.obj", 1.5f, baseColour);
     SetIdentityMatrix(internal);
 }
 
