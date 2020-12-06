@@ -7,13 +7,11 @@
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(int _ID, std::string filename, float _position[3], Vector colour) :
+Limb::Limb(int _ID, std::string filename, float _position[3], Vector colour, float scale) :
         rotationX(0), rotationY(0), rotationZ(0),
         position{0},
         internal{0}, transformation{0}, model{0}
 {
-
-    float scale = 0.0025f;
     ID = _ID;
 
     VAO = readMeshFile(filename, scale, colour);

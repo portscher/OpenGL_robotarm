@@ -34,11 +34,11 @@ GLFWwindow *window;
 GLuint defaultVAO;
 
 Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
-std::string firstLimbObj = "../models/bottle.obj";
+std::string firstLimbObj = "../models/segment1.obj";
 Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
-std::string secondLimbObj = "../models/bottle.obj";
+std::string secondLimbObj = "../models/segment1.obj";
 Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
-std::string thirdLimbObj = "../models/bottle.obj";
+std::string thirdLimbObj = "../models/banana.obj";
 
 GLuint ShaderProgram;
 
@@ -246,14 +246,14 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
     }
 }
 
-/**
+/******************************************************************
  * @brief Provides a callback for receiving the state of the mouse.
  * 
  * @param window The actual window
  * @param xpos The x-position of the mouse
  * @param ypos The y-position of the mouse.
  * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
- */
+*******************************************************************/
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
     if (mouse.firstMouse)
@@ -332,9 +332,9 @@ int main(int argc, char **argv)
     Initialize(camera);
 
     Arm arm;
-    arm.addLimb(firstLimbObj, 1, COLOUR1);
-    arm.addLimb(secondLimbObj, 1.7, COLOUR2);
-    arm.addLimb(thirdLimbObj, 1.7, COLOUR3);
+    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.5f);
+    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.5f);
+    arm.addLimb(thirdLimbObj, 2.3, COLOUR3, 0.25f);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))

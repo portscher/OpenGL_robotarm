@@ -11,9 +11,8 @@ Arm::Arm() :
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    VAO = readMeshFile("../models/base.obj", 0.4, baseColour);
+    VAO = readMeshFile("../models/smp-base.obj", 1.5f, baseColour);
     SetIdentityMatrix(internal);
-    SetRotationX(90, internal);
 }
 
 /******************************************************************
@@ -23,7 +22,7 @@ Arm::Arm() :
 * @param w = width
 * @param h = height
 *******************************************************************/
-void Arm::addLimb(std::string filename, float offset, Vector colour)
+void Arm::addLimb(std::string filename, float offset, Vector colour, float scale)
 {
     int currentIndex = limbs.size() - 1;
 
@@ -34,7 +33,7 @@ void Arm::addLimb(std::string filename, float offset, Vector colour)
 
     float pos[] = {center, offset, center};
 
-    limbs.push_back(new Limb(currentIndex, filename, pos, colour));
+    limbs.push_back(new Limb(currentIndex, filename, pos, colour, scale));
 }
 
 /******************************************************************

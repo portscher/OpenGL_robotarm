@@ -18,7 +18,7 @@ private:
 public:
     Arm();
 
-    void addLimb(std::string filename, float offset, Vector colour);
+    void addLimb(std::string filename, float offset, Vector colour, float scale);
 
     void update(KeyboardState *state);
 

@@ -37,7 +37,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, std::string filename, float position[3], Vector colour);
+    Limb(int ID, std::string filename, float position[3], Vector colour, float scale);
 
     void setRotation(int axis, float deg);
 
