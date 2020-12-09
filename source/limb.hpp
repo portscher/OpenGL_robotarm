@@ -16,7 +16,12 @@ class Limb
 private:
     int ID;
     std::string filename;
-    GLint VAO;
+
+    GLuint VAO;
+    GLuint NBO; // normals
+    GLuint CBO; // colors
+    GLuint IBO; // indexes
+    GLuint VBO;
 
     float rotationX;
     float rotationY;

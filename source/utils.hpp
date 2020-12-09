@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <cstdlib>
+#include <string>
 #include <cmath>
 #include <cstring>
 #include <cstdio>
@@ -9,6 +10,8 @@
 #include <GLFW/glfw3.h>
 #include "LoadShader.h"    /* Loading function for shader code */
 #include "Vector.hpp"
+
+using namespace std;
 
 /* Indices to vertex attributes; in this case position only */
 enum DataID
@@ -45,7 +48,8 @@ typedef struct mouse
 
 GLuint createCubeMesh(float width, float height);
 GLuint createCubeMesh(float width, float height, float *colour);
-GLuint readMeshFile(std::string filename, float scale, Vector rgb);
+void readMeshFile(string filename, float scale, Vector rgb,
+        GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *NBO, GLuint *VAO);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 

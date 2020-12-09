@@ -11,7 +11,13 @@ class Arm
 {
 private:
     std::vector<Limb *> limbs;
+
     GLuint VAO;
+    GLuint NBO; // normals
+    GLuint CBO; // colors
+    GLuint IBO; // indexes
+    GLuint VBO;
+
     float internal[16];
     std::string filename;
 

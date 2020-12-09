@@ -9,20 +9,16 @@
 *******************************************************************/
 Limb::Limb(int _ID, std::string filename, float _position[3], Vector colour, float scale) :
         rotationX(0), rotationY(0), rotationZ(0),
-        position{0},
+        position{_position[0], _position[1], _position[2]},
         internal{0}, transformation{0}, model{0}
 {
     ID = _ID;
 
-    VAO = readMeshFile(filename, scale, colour);
+    readMeshFile(filename, scale, colour, &VBO, &IBO, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
     SetRotationZ(270, internal);
     SetIdentityMatrix(transformation);
     SetIdentityMatrix(model);
-    // WTH? anyways.. it works
-    position[0] = _position[0];
-    position[1] = _position[1];
-    position[2] = _position[2];
 }
 
 void Limb::setRotation(int axis, float deg)

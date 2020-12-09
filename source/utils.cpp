@@ -1,4 +1,3 @@
-#include <string>
 #include "Vector.hpp"
 #include "utils.hpp"
 #include "OBJParser.hpp"            /* Loading function for triangle meshes in OBJ format */
@@ -12,14 +11,9 @@
 * @param scale = scale factor applied to the vertices
 * @param rgb = 3D vector containing the color of the object (r=x, g=y, b=z)
 *******************************************************************/
-GLuint readMeshFile(std::string filename, float scale, Vector rgb)
+void readMeshFile(string filename, float scale, Vector rgb,
+        GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *NBO, GLuint *VAO)
 {
-    GLuint VBO;
-    GLuint IBO;
-    GLuint CBO;
-    GLuint NBO;
-    GLuint VAO;
-
     /* Structure for loading of OBJ data */
     obj_scene_data data;
 
@@ -90,49 +84,47 @@ GLuint readMeshFile(std::string filename, float scale, Vector rgb)
 
 
     /* Create buffer objects and load data into buffers*/
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &CBO);
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glGenBuffers(1, CBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), color_buffer_data, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &NBO);
-    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glGenBuffers(1, NBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *NBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
 
 
-    glGenBuffers(1, &IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glGenBuffers(1, IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.face_count*3*sizeof(GLushort), index_buffer_data, GL_STATIC_DRAW);
 
 
     /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, VAO);
+    glBindVertexArray(*VAO);
 
     /* Bind buffer with vertex data of currently active object */
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glEnableVertexAttribArray(vPosition);
     glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     /* Bind color buffer */
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
     glEnableVertexAttribArray(vColor);
     glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
 
     /* Bind normal buffer */
     glEnableVertexAttribArray(vNormal);
-    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *NBO);
     glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
 
     /* Bind index buffer */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
 
     glBindVertexArray(0);
-
-    return VAO;
 }
 
 
