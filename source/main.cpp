@@ -34,9 +34,9 @@ GLFWwindow *window;
 GLuint defaultVAO;
 
 Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
-std::string firstLimbObj = "../models/segment1.obj";
+std::string firstLimbObj = "../models/segment.obj";
 Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
-std::string secondLimbObj = "../models/segment1.obj";
+std::string secondLimbObj = "../models/segment-2.obj";
 Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
 std::string thirdLimbObj = "../models/banana.obj";
 
@@ -332,9 +332,9 @@ int main(int argc, char **argv)
     Initialize(camera);
 
     Arm arm;
-    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.5f);
-    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.5f);
-    arm.addLimb(thirdLimbObj, 2.3, COLOUR3, 0.25f);
+    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.3f);
+    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.3f);
+    arm.addLimb(thirdLimbObj, 1.45, COLOUR3, 0.25f);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))
