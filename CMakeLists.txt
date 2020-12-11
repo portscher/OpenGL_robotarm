@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.0)
 
 # Specify project name
-project(assign_3)
+project(assign_4)
 
 # Specify build type
 set(CMAKE_BUILD_TYPE RelWithDebInfo)

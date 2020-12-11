@@ -22,7 +22,9 @@
 
 /******************************************************************
 *
-* SetIdentityMatrix
+* @brief Initializes an identity matrix and saves it in the given matrix
+*
+* @param result
 *
 *******************************************************************/
 
@@ -40,7 +42,12 @@ void SetIdentityMatrix(float *result)
 
 /******************************************************************
 *
-* SetScaleMatrix
+* @brief Sets a ScaleMatrix
+ *
+ * @param scalex = Scaling value for the x axis
+ * @param scaley = Scaling value for the y axis
+ * @param scalez = Scaling value for the z axis
+ * @param result = the matrix where the result is saved
 *
 *******************************************************************/
 

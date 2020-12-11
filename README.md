@@ -15,18 +15,27 @@ This project contains a simple simulated robot arm made with OpenGL and written 
  
 ## Keyboard controls:
 
-First select what you want to control:
+First select which object you want to control:
 - 0 - camera
 - 1 - First limb
 - 2 - Second limb
 - 3 - Third limb
 
-Then use the following keys to move the chosen obect:
-- W - up
+When controlling the camera:
+- W - zoom in
+- S - zoom out
 - A - left
+- D - right
+
+When controlling limbs:
+- W - up
 - S - down
+- A - left
 - D - right
 
 Additional keyboard controls:
-- R - Reset to initial position
-- Q closes the window
+- R - reset to initial position
+- Q - closes the window
+
+Mouse wheel:
+- Also controls the zoom

@@ -7,27 +7,24 @@
 #include "limb.hpp"
 #include "utils.hpp"
 
-using namespace std;
-
 class Arm
 {
 private:
-    vector<Limb *> limbs;
-    GLint VAO;
+    std::vector<Limb *> limbs;
+    GLuint VAO;
     float internal[16];
-    float height;
-    float width;
+    std::string filename;
 
 public:
     Arm();
 
-    void addLimb(float width, float height, float *colour);
+    void addLimb(std::string filename, float offset, Vector colour, float scale);
 
     void update(KeyboardState *state);
 
     void display(GLint ShaderProgram);
 
-    Limb getLimb(int index);
+    static float getCurrentRotationAt(int axis, Limb *limb);
 };
 
 #endif /* ARM_H */

@@ -1,11 +1,149 @@
+#include <string>
+#include "Vector.hpp"
 #include "utils.hpp"
+#include "OBJParser.hpp"            /* Loading function for triangle meshes in OBJ format */
 
 /******************************************************************
 *
-* createCubeMesh
+* @brief This function read the content of an OBJ file and then fill the
+* buffer objects with the data
 *
-* This function creates a cube mesh and fills buffer objects with
+* @param filename = name of file.obj
+* @param scale = scale factor applied to the vertices
+* @param rgb = 3D vector containing the color of the object (r=x, g=y, b=z)
+*******************************************************************/
+GLuint readMeshFile(std::string filename, float scale, Vector rgb)
+{
+    GLuint VBO;
+    GLuint IBO;
+    GLuint CBO;
+    GLuint NBO;
+    GLuint VAO;
+
+    /* Structure for loading of OBJ data */
+    obj_scene_data data;
+
+    /* Load first OBJ model */
+    int success = parse_obj_scene(&data, filename.c_str());
+
+    if(!success)
+        printf("Could not load file. Exiting.\n");
+
+    /*  Copy mesh data from structs into appropriate arrays */
+    int indx = data.face_count;
+
+    GLushort* index_buffer_data = (GLushort*) calloc (indx*3, sizeof(GLushort));
+    GLfloat* vertex_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
+    GLfloat* color_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
+    GLfloat* normal_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
+
+    /* for each triangle... */
+    for(int i=0; i<indx; i++)
+    {
+        int offset3D = i*9;
+        int offset2D = i*6;
+
+        /* fill VBO for this triangle (x,y,z coords for 3 vertices = 9 values) */
+        for(int j=0; j<3; j++)
+        {
+            /* Index of current vertex */
+            int idVert = (GLushort)(*data.face_list[i]).vertex_index[j];
+            vertex_buffer_data[offset3D + j*3 ] = (GLfloat)(*data.vertex_list[idVert]).e[0]*scale;
+            vertex_buffer_data[offset3D + j*3 + 1] = (GLfloat)(*data.vertex_list[idVert]).e[1]*scale;
+            vertex_buffer_data[offset3D + j*3 + 2] = (GLfloat)(*data.vertex_list[idVert]).e[2]*scale;
+        }
+
+        /* fill Normal buffer for this triangle */
+        if( (*data.face_list[i]).normal_index[0] != -1 )
+        {
+            for(int j=0; j<3; j++)
+            {
+                int idNorm = (GLushort)(*data.face_list[i]).normal_index[j];
+                normal_buffer_data[offset3D + j*3 ] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[0];
+                normal_buffer_data[offset3D + j*3 + 1] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[1];
+                normal_buffer_data[offset3D + j*3 + 2] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[2];
+            }
+        }
+        else
+        {
+            for(int j=0; j<3; j++)
+            {
+                normal_buffer_data[offset3D + j*3 ] = vertex_buffer_data[offset3D + j*3 ];
+                normal_buffer_data[offset3D + j*3 + 1] = vertex_buffer_data[offset3D + j*3 + 1];
+                normal_buffer_data[offset3D + j*3 + 2] = vertex_buffer_data[offset3D + j*3 + 2];
+            }
+        }
+
+        /* fill Color buffer for this triangle */
+        for(int j=0; j<3; j++)
+        {
+            color_buffer_data[offset3D + j*3 ] = (GLfloat)(rgb.x);
+            color_buffer_data[offset3D + j*3 + 1] = (GLfloat)(rgb.y);
+            color_buffer_data[offset3D + j*3 + 2] = (GLfloat)(rgb.z);
+        }
+
+        /* Fill indices buffer for this triangles (3 indices) */
+        index_buffer_data[i*3] = i*3;
+        index_buffer_data[i*3+1] = i*3+1;
+        index_buffer_data[i*3+2] = i*3+2;
+    }
+
+
+    /* Create buffer objects and load data into buffers*/
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &CBO);
+    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), color_buffer_data, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &NBO);
+    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
+
+
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.face_count*3*sizeof(GLushort), index_buffer_data, GL_STATIC_DRAW);
+
+
+    /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    /* Bind buffer with vertex data of currently active object */
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glEnableVertexAttribArray(vPosition);
+    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    /* Bind color buffer */
+    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glEnableVertexAttribArray(vColor);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
+
+    /* Bind normal buffer */
+    glEnableVertexAttribArray(vNormal);
+    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
+
+    /* Bind index buffer */
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+
+    glBindVertexArray(0);
+
+    return VAO;
+}
+
+
+/******************************************************************
+*
+* @brief This function creates a cube mesh and fills buffer objects with
 * the geometry.
+*
+* @param width of the object
+* @param height of the object
+* @param colour of the object, as RGB values
 *
 *******************************************************************/
 GLuint createCubeMesh(float width, float height, float *colour)
@@ -93,9 +231,7 @@ GLuint createCubeMesh(float width, float height, float *colour)
 
 /******************************************************************
 *
-* AddShader
-*
-* This function creates and adds individual shaders
+* @brief This function creates and adds individual shaders
 *
 *******************************************************************/
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType)
@@ -132,9 +268,7 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 
 /******************************************************************
 *
-* CreateShaderProgram
-*
-* This function creates the shader program; vertex and fragment
+* @brief This function creates the shader program; vertex and fragment
 * shaders are loaded and linked into program; final shader program
 * is put into the rendering pipeline
 *
@@ -188,4 +322,19 @@ void CreateShaderProgram(GLuint ShaderProgram)
 
     /* Put linked shader program into drawing pipeline */
     glUseProgram(ShaderProgram);
+}
+
+
+/**
+ * @brief Constrains an angle to a range from 0 to 359 degrees.
+ *
+ * @param x = the angle to be constrained
+ *
+ */
+float constrainAngle(float x)
+{
+    x = fmodf(x, 360);
+    if (x < 0)
+        x += 360;
+    return x;
 }

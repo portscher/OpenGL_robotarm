@@ -33,13 +33,12 @@ GLFWwindow *window;
 
 GLuint defaultVAO;
 
-const float THICKNESS = .4;
-const float FIRST_LIMB_HEIGHT = 2.5f;
-float COLOUR1[3] = {0.0f, 0.3f, 0.5f};
-const float SECOND_LIMB_LENGTH = 2.5f;
-float COLOUR2[3] = {0.3f, 0.5f, 0.0f};
-const float THIRD_LIMB_LENGTH = 2.0f;
-float COLOUR3[3] = {0.5f, 0.0f, 0.3f};
+Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
+std::string firstLimbObj = "../models/segment.obj";
+Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
+std::string secondLimbObj = "../models/segment-2.obj";
+Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
+std::string thirdLimbObj = "../models/banana.obj";
 
 GLuint ShaderProgram;
 
@@ -68,9 +67,7 @@ MouseState mouse
 
 /******************************************************************
 *
-* Display
-*
-* This function is called when the content of the window needs to be
+* @brief This function is called when the content of the window needs to be
 * drawn/redrawn. It has been specified through 'glutDisplayFunc()';
 * Enable vertex attributes, create binding between C program and
 * attribute name in shader, provide data for uniform variables
@@ -107,9 +104,7 @@ void Display(Arm arm, Camera cam)
 
 /******************************************************************
 *
-* Initialize
-*
-* This function is called to initialize rendering elements, setup
+* @brief This function is called to initialize rendering elements, setup
 * vertex buffer objects, and to setup the vertex and fragment shader;
 * meshes are loaded from files in OBJ format; data is copied from
 * structures into vertex and index arrays
@@ -148,12 +143,10 @@ void Initialize(Camera cam)
 
 /******************************************************************
 *
-* Resize
-*
-* This function is called when the window size is changed
+* @brief This function is called when the window size is changed
 * to update the viewport dimension accordingly
 *
-* width, height = new dimension of the window after resize
+* @params width, height = new dimension of the window after resize
 *******************************************************************/
 
 void Resize(GLFWwindow *window, int width, int height)
@@ -165,12 +158,10 @@ void Resize(GLFWwindow *window, int width, int height)
 
 /******************************************************************
 *
-* keyCallback
+* @brief This function is called when a keyboard action is detected
 *
-* This function is called when a keyboard action is detected
-*
-* key = id of the key activated
-* action = id of the action (pressed, released, maintained ...)
+* @param key = id of the key activated
+* @param action = id of the action (pressed, released, maintained ...)
 *******************************************************************/
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -235,11 +226,9 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 /******************************************************************
 *
-* scrollCallback
+* @brief This function is called when mouse scrolling is detected
 *
-* This function is called when mouse scrolling is detected
-*
-* yoffset = value of the scrolling along Y axis
+* @param yoffset = value of the scrolling along Y axis
 *******************************************************************/
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
@@ -257,14 +246,14 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
     }
 }
 
-/**
+/******************************************************************
  * @brief Provides a callback for receiving the state of the mouse.
  * 
  * @param window The actual window
  * @param xpos The x-position of the mouse
  * @param ypos The y-position of the mouse.
  * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
- */
+*******************************************************************/
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
     if (mouse.firstMouse)
@@ -299,9 +288,7 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 
 /******************************************************************
 *
-* main
-*
-* Main function to setup GLUT, GLEW, and enter rendering loop
+* @brief Main function to setup GLUT, GLEW, and enter rendering loop
 *
 *******************************************************************/
 
@@ -314,7 +301,7 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(winWidth, winHeight, "PS3 - Transformations", nullptr, nullptr);
+    window = glfwCreateWindow(winWidth, winHeight, "Banana Arm", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     /* Link callback functions */
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -345,9 +332,9 @@ int main(int argc, char **argv)
     Initialize(camera);
 
     Arm arm;
-    arm.addLimb(THICKNESS, FIRST_LIMB_HEIGHT, COLOUR1);
-    arm.addLimb(THICKNESS, SECOND_LIMB_LENGTH, COLOUR2);
-    arm.addLimb(THICKNESS, THIRD_LIMB_LENGTH, COLOUR3);
+    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.3f);
+    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.3f);
+    arm.addLimb(thirdLimbObj, 1.45, COLOUR3, 0.25f);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))
