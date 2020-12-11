@@ -31,16 +31,12 @@ float winHeight = 800.0f;
 /* window */
 GLFWwindow *window;
 
-GLuint defaultVAO;
-
 Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
 std::string firstLimbObj = "../models/segment1.obj";
 Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
 std::string secondLimbObj = "../models/segment1.obj";
 Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
 std::string thirdLimbObj = "../models/banana.obj";
-
-GLuint ShaderProgram;
 
 KeyboardState keyboard = {
         .up = 0,
@@ -67,50 +63,13 @@ MouseState mouse
 
 /******************************************************************
 *
-* @brief This function is called when the content of the window needs to be
-* drawn/redrawn. It has been specified through 'glutDisplayFunc()';
-* Enable vertex attributes, create binding between C program and
-* attribute name in shader, provide data for uniform variables
-*
-*******************************************************************/
-
-void Display(Arm arm, Camera cam)
-{
-    /* Clear window; color specified in 'Initialize()' */
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    /* Associate program with uniform shader matrices */
-    GLint projectionUniform = glGetUniformLocation(ShaderProgram, "ProjectionMatrix");
-    if (projectionUniform == -1)
-    {
-        fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
-        exit(-1);
-    }
-    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, cam.projectionMatrix);
-
-    GLint ViewUniform = glGetUniformLocation(ShaderProgram, "ViewMatrix");
-    if (ViewUniform == -1)
-    {
-        fprintf(stderr, "Could not bind uniform ViewMatrix\n");
-        exit(-1);
-    }
-    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, cam.viewMatrix);
-
-    arm.display(ShaderProgram);
-
-    /* Swap between front and back buffer */
-    glfwSwapBuffers(window);
-}
-
-/******************************************************************
-*
 * @brief This function is called to initialize rendering elements, setup
 * vertex buffer objects, and to setup the vertex and fragment shader;
 * meshes are loaded from files in OBJ format; data is copied from
 * structures into vertex and index arrays
 *
 *******************************************************************/
-void Initialize(Camera cam)
+void Initialize()
 {
     /* Set background (clear) color to gray */
     glClearColor(0.1, 0.1, 0.1, 0.0);
@@ -119,25 +78,6 @@ void Initialize(Camera cam)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    /* Setup shaders and shader program */
-    ShaderProgram = glCreateProgram();
-    CreateShaderProgram(ShaderProgram);
-
-    /* Initialize project/view matrices */
-    SetIdentityMatrix(cam.projectionMatrix);
-    SetIdentityMatrix(cam.viewMatrix);
-
-    /* Set projection transform */
-    float aspect = winWidth / winHeight;
-    float nearPlane = 1.0;
-    float farPlane = 50.0;
-    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, cam.projectionMatrix); /* build projection matrix */
-
-    /* Set viewing transform */
-    SetTranslation(0.0, -5.0, -20.0, cam.viewMatrix); /* translation of the camera */
-    float RotationMatrix[16];
-    SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
-    MultiplyMatrix(RotationMatrix, cam.viewMatrix, cam.viewMatrix); /* assemble View matrix */
 }
 
 
@@ -323,15 +263,18 @@ int main(int argc, char **argv)
     }
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
-    glGenVertexArrays(1, &defaultVAO);
-    glBindVertexArray(defaultVAO);
+    /* Setup shaders and shader program */
+    GLuint ShaderProgram = CreateShaderProgram(
+            "../shaders/vertexshader.vs",
+            "../shaders/fragmentshader.fs"
+            );
 
     Camera camera;
 
     /* Setup scene and rendering parameters */
-    Initialize(camera);
+    Initialize();
 
-    Arm arm;
+    Arm arm(&camera);
     arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.5f);
     arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.5f);
     arm.addLimb(thirdLimbObj, 2.3, COLOUR3, 0.25f);
@@ -343,12 +286,17 @@ int main(int argc, char **argv)
 
         /* Update scene */
         arm.update(&keyboard);
-
         camera.UpdatePosition(&keyboard, &mouse);
         camera.UpdateZoom(&scrollWheel);
 
-        /* Draw scene */
-        Display(arm, camera);
+        // update camera
+        camera.Shoot(ShaderProgram);
+
+        // draw scene
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        arm.display(ShaderProgram);
+        /* Swap between front and back buffer */
+        glfwSwapBuffers(window);
     }
 
     /* Close window */

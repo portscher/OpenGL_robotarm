@@ -7,14 +7,14 @@
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(int _ID, std::string filename, float _position[3], Vector colour, float scale) :
-        rotationX(0), rotationY(0), rotationZ(0),
+Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector colour, float scale) :
+        arm(_arm), rotationX(0), rotationY(0), rotationZ(0),
         position{_position[0], _position[1], _position[2]},
         internal{0}, transformation{0}, model{0}
 {
     ID = _ID;
 
-    readMeshFile(filename, scale, colour, &VBO, &IBO, &CBO, &NBO, &VAO);
+    readMeshFile(filename, scale, colour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
     SetRotationZ(270, internal);
     SetIdentityMatrix(transformation);
@@ -110,12 +110,12 @@ void Limb::update(float *parentTransform)
     MultiplyMatrix(transformation, model, transformation);
 }
 
-void Limb::display(GLint ShaderProgram)
+void Limb::display(GLint program)
 {
     GLint size;
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-    GLint ModelUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
+    GLint ModelUniform = glGetUniformLocation(program, "ModelMatrix");
     if (ModelUniform == -1)
     {
         fprintf(stderr, "Could not bind uniform Model Matrix for cuboid %d.\n", ID);
@@ -123,7 +123,14 @@ void Limb::display(GLint ShaderProgram)
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, model);
 
-    /* Bind VAO of the current object */
+    glEnableVertexAttribArray(vColor);
+    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(vNormal);
+    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);

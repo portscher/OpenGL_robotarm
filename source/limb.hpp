@@ -11,17 +11,19 @@
 #include "Matrix.h"
 #include "Vector.hpp"
 
+class Arm;
+
 class Limb
 {
 private:
     int ID;
     std::string filename;
 
+    Arm *arm;
+
     GLuint VAO;
     GLuint NBO; // normals
     GLuint CBO; // colors
-    GLuint IBO; // indexes
-    GLuint VBO;
 
     float rotationX;
     float rotationY;
@@ -42,7 +44,7 @@ private:
     float model[16];
 
 public:
-    Limb(int ID, std::string filename, float position[3], Vector colour, float scale);
+    Limb(Arm *arm, int ID, std::string filename, float position[3], Vector colour, float scale);
 
     void setRotation(int axis, float deg);
 

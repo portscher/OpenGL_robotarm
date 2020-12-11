@@ -12,8 +12,10 @@
 * @param rgb = 3D vector containing the color of the object (r=x, g=y, b=z)
 *******************************************************************/
 void readMeshFile(string filename, float scale, Vector rgb,
-        GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *NBO, GLuint *VAO)
+        GLuint *CBO, GLuint *NBO, GLuint *VAO)
 {
+    GLuint VBO;
+    GLuint IBO;
     /* Structure for loading of OBJ data */
     obj_scene_data data;
 
@@ -35,7 +37,7 @@ void readMeshFile(string filename, float scale, Vector rgb,
     for(int i=0; i<indx; i++)
     {
         int offset3D = i*9;
-        int offset2D = i*6;
+        // int offset2D = i*6;
 
         /* fill VBO for this triangle (x,y,z coords for 3 vertices = 9 values) */
         for(int j=0; j<3; j++)
@@ -84,8 +86,8 @@ void readMeshFile(string filename, float scale, Vector rgb,
 
 
     /* Create buffer objects and load data into buffers*/
-    glGenBuffers(1, VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, CBO);
@@ -97,8 +99,8 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
 
 
-    glGenBuffers(1, IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.face_count*3*sizeof(GLushort), index_buffer_data, GL_STATIC_DRAW);
 
 
@@ -107,7 +109,7 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glBindVertexArray(*VAO);
 
     /* Bind buffer with vertex data of currently active object */
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glEnableVertexAttribArray(vPosition);
     glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
@@ -122,7 +124,7 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
 
     /* Bind index buffer */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
     glBindVertexArray(0);
 }
@@ -265,8 +267,9 @@ void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderTy
 * is put into the rendering pipeline
 *
 *******************************************************************/
-void CreateShaderProgram(GLuint ShaderProgram)
+GLuint CreateShaderProgram(string vsPath, string fsPath)
 {
+    GLuint ShaderProgram = glCreateProgram();
     if (ShaderProgram == 0)
     {
         fprintf(stderr, "Error creating shader program\n");
@@ -312,8 +315,7 @@ void CreateShaderProgram(GLuint ShaderProgram)
         exit(1);
     }
 
-    /* Put linked shader program into drawing pipeline */
-    glUseProgram(ShaderProgram);
+    return ShaderProgram;
 }
 
 

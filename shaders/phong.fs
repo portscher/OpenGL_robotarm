@@ -1,22 +1,16 @@
 #version 330
 
-// Uniform input
-uniform mat4 ProjectionMatrix;
-uniform mat4 ViewMatrix;
-uniform mat4 TransformMatrix;
-
 uniform float DiffuseFactor;
 uniform float SpecularFactor;
 uniform float AmbientFactor;
-uniform int isSun;
+uniform mat4 ViewMatrix;
 
-uniform sampler2D tex;
+// uniform sampler2D tex;
 
-// Content of the vertex data
-layout (location = 0) in vec3 Position;
-layout (location = 1) in vec3 Color;
-layout (location = 2) in vec3 Normal;
-layout (location = 3) in vec2 UV;
+in vec3 color;
+in vec3 normalInt;
+in vec3 vertPosInt;
+// in vec2 UVcoords; // coordinates of fragment
 
 #define LIGHT_COUNT 3
 struct Light {
@@ -25,8 +19,8 @@ struct Light {
 };
 uniform Light lights[LIGHT_COUNT];
 
-// Output sent to the fragment Shader
-out vec4 vColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
     // vertex to lightsource vector (L)
@@ -66,37 +60,31 @@ vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
 
 void main()
 {
-    // Compute modelview matrix
-    mat4 modelViewMatrix = ViewMatrix * TransformMatrix;
-    mat4 modelViewProjectionMatrix = ProjectionMatrix * modelViewMatrix;
+    // Read color at UVcoords position in the texture
+    // vec4 TexColor = texture2D(tex, UVcoords);
+    vec4 TexColor = color;
+    vec3 result = TexColor.rgb; // default value to current texture color
 
-    vec4 TexColor = texture2D(tex, UV);
+    // if (isSun == 0) {
+        // normalize vector again, in case its not unit anymore
+        // because of interpolation
+        vec3 normal = normalize(normalInt);
 
-    if (isSun == 0) {
-        // Compute a 4*4 normal matrix
-        mat4 normalMatrix = transpose(inverse(modelViewMatrix));
-        vec3 normal = normalize((normalMatrix * vec4(normalize(Normal), 1.0)).xyz);
-
-        // Compute vertex position in Model space
-        vec4 position = modelViewMatrix * vec4(Position,1.0);
-
-        vec3 lightFactor = calculatePhong(normal, position.xyz, lights[0]);
+        vec3 lightFactor = calculatePhong(normal, vertPosInt, lights[0]);
         for(int i = 1; i < LIGHT_COUNT; i++){
-            lightFactor += calculatePhong(normal, position.xyz, lights[i]);
+            lightFactor += calculatePhong(normal, vertPosInt, lights[i]);
         }
 
         // Ambient Reflection: I_A = k_A * I_L
         // k_A: AmbientFactor
         // I_L: Light at Surface Location (LightColor1???)
-        vec3 ambientPart = vec3(TexColor.xyz * AmbientFactor);
+        vec3 ambientPart = vec3(TexColor * AmbientFactor);
+        vec3 result = (lightFactor + ambientPart);
 
-        vColor = vec4(TexColor.xyz * (lightFactor + ambientPart), 1.);
-    } else {
-        // ignore lighting if its the sun
-        vColor = vec4(TexColor.xyz, 1.);
-    }
-
-
-    gl_Position = modelViewProjectionMatrix * vec4(Position, 1.0);
-
+        FragColor = vec4(TexColor.xyz * result, 1.);
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     FragColor = vec4(result, 1.);
+    //     BrightColor = vec4(result/**bloomFactor*/, 1.);
+    // }
 }

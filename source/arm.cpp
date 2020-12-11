@@ -1,17 +1,17 @@
 #include "arm.hpp"
-#include "Vector.hpp"
+#include "Matrix.h"
 
 /******************************************************************
 *
 * @brief Constructs a new Arm object (with static base)
 *
 *******************************************************************/
-Arm::Arm() :
-        internal{0}
+Arm::Arm(Camera *_cam) :
+    cam(_cam), internal{0}
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    readMeshFile("../models/base.obj", 1.5f, baseColour, &VBO, &IBO, &CBO, &NBO, &VAO);
+    readMeshFile("../models/base.obj", 1.5f, baseColour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
 }
 
@@ -22,18 +22,18 @@ Arm::Arm() :
 * @param w = width
 * @param h = height
 *******************************************************************/
-void Arm::addLimb(std::string filename, float offset, Vector colour, float scale)
+void Arm::addLimb(string filename, float offset, Vector colour, float scale)
 {
     int currentIndex = limbs.size() - 1;
 
     float center = 0;
 
-    std::cout << "creating limb: " <<
-         "(x, y, z): " << center << ", " << offset << ", 0. " << std::endl;
+    cout << "creating limb: " <<
+         "(x, y, z): " << center << ", " << offset << ", 0. " << endl;
 
     float pos[] = {center, offset, center};
 
-    limbs.push_back(new Limb(currentIndex, filename, pos, colour, scale));
+    limbs.push_back(new Limb(this, currentIndex, filename, pos, colour, scale));
 }
 
 /******************************************************************
@@ -109,18 +109,29 @@ float Arm::getCurrentRotationAt(int axis, Limb *limb)
     return constrainAngle(temp);
 }
 
-void Arm::display(GLint ShaderProgram)
+void Arm::display(GLint program)
 {
+    glUseProgram(program);
+
     GLint size;
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-    GLint ModelUniform = glGetUniformLocation(ShaderProgram, "ModelMatrix");
+    GLint ModelUniform = glGetUniformLocation(program, "ModelMatrix");
     if (ModelUniform == -1)
     {
         fprintf(stderr, "Could not bind uniform Model Matrix for cuboid.\n");
         exit(-1);
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, internal);
+
+
+    glEnableVertexAttribArray(vColor);
+    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(vNormal);
+    glBindBuffer(GL_ARRAY_BUFFER, NBO);
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     /* Bind VAO of the current object */
     glBindVertexArray(VAO);
@@ -129,6 +140,10 @@ void Arm::display(GLint ShaderProgram)
 
     for (auto limb : limbs)
     {
-        limb->display(ShaderProgram);
+        limb->display(program);
     }
+}
+
+Camera Arm::getCamera() {
+    return *cam;
 }

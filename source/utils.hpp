@@ -49,11 +49,11 @@ typedef struct mouse
 GLuint createCubeMesh(float width, float height);
 GLuint createCubeMesh(float width, float height, float *colour);
 void readMeshFile(string filename, float scale, Vector rgb,
-        GLuint *VBO, GLuint *IBO, GLuint *CBO, GLuint *NBO, GLuint *VAO);
+        GLuint *CBO, GLuint *NBO, GLuint *VAO);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 
-void CreateShaderProgram(GLuint ShaderProgram);
+GLuint CreateShaderProgram(string vsPath, string fsPath);
 
 float constrainAngle(float x);
 

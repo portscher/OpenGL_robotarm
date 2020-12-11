@@ -3,10 +3,16 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 #include <vector>
-#include "limb.hpp"
 #include "utils.hpp"
+#include "limb.hpp"
+#include "camera.hpp"
+#include "Vector.hpp"
 
+using namespace std;
+
+class Limb;
 class Arm
 {
 private:
@@ -15,14 +21,13 @@ private:
     GLuint VAO;
     GLuint NBO; // normals
     GLuint CBO; // colors
-    GLuint IBO; // indexes
-    GLuint VBO;
 
     float internal[16];
     std::string filename;
+    Camera *cam;
 
 public:
-    Arm();
+    Arm(Camera *cam);
 
     void addLimb(std::string filename, float offset, Vector colour, float scale);
 
@@ -31,6 +36,8 @@ public:
     void display(GLint ShaderProgram);
 
     static float getCurrentRotationAt(int axis, Limb *limb);
+
+    Camera Arm::getCamera();
 };
 
 #endif /* ARM_H */

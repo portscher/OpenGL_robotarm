@@ -2,7 +2,7 @@
 
 /**
  * @brief Construct a new Camera object.
- * 
+ *
  */
 Camera::Camera() :
         currentPosition{0.0, 0.0, -17.0},
@@ -12,11 +12,27 @@ Camera::Camera() :
         yAngle(0.0f),
         fieldOfView(45.0)
 {
+
+    /* Set projection transform */
+    float aspect = winWidth / winHeight;
+    float nearPlane = 1.0;
+    float farPlane = 50.0;
+    SetPerspectiveMatrix(45.0, aspect, nearPlane, farPlane, projectionMatrix); /* build projection matrix */
+
+    /* Set viewing transform */
+    SetTranslation(0.0, -5.0, -20.0, viewMatrix); /* translation of the camera */
+    float RotationMatrix[16];
+    SetRotationX(15.0, RotationMatrix); /* small rotation of the camera, to look at the center of the scene */
+    MultiplyMatrix(RotationMatrix, viewMatrix, viewMatrix); /* assemble View matrix */
+
+    /* Initialize project/view matrices */
+    SetIdentityMatrix(projectionMatrix);
+    SetIdentityMatrix(viewMatrix);
 }
 
 /**
  * @brief Updates the field of view (also known als zoom) of the camera.
- * 
+ *
  * @param state The current state of the scroll wheel.
  */
 void Camera::UpdateZoom(ScrollWheelState *state)
@@ -30,7 +46,7 @@ void Camera::UpdateZoom(ScrollWheelState *state)
 
 /**
  * @brief Updates the view of the camera.
- * 
+ *
  * @remarks Based on the article at https://learnopengl.com/Getting-started/Camera
  */
 void Camera::UpdateView()
@@ -50,7 +66,7 @@ void Camera::UpdateView()
 
 /**
  * @brief Moves the camera up.
- * 
+ *
  * @param speed The speed factor that describes how fast the camera should move.
  */
 void Camera::MoveUp(float speed)
@@ -62,7 +78,7 @@ void Camera::MoveUp(float speed)
 
 /**
  * @brief Moves the camera down.
- * 
+ *
  * @param speed The speed factor that describes how fast the camera should move.
  */
 void Camera::MoveDown(float speed)
@@ -74,7 +90,7 @@ void Camera::MoveDown(float speed)
 
 /**
  * @brief Moves the camera left.
- * 
+ *
  * @param speed The speed factor that describes how fast the camera should move.
  */
 void Camera::MoveLeft(float speed)
@@ -88,7 +104,7 @@ void Camera::MoveLeft(float speed)
 
 /**
  * @brief Moves the camera right.
- * 
+ *
  * @param speed The speed factor that describes how fast the camera should move.
  */
 void Camera::MoveRight(float speed)
@@ -102,7 +118,7 @@ void Camera::MoveRight(float speed)
 
 /**
  * @brief Updates the position of the camera object.
- * 
+ *
  */
 void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState)
 {
@@ -139,7 +155,7 @@ void Camera::UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState
 
 /**
  * @brief Calculates the view matrix of the camera.
- * 
+ *
  * @param position The current position of the camera.
  * @param target The target to which the camera is pointing.
  * @param upVector The up vector of the camera.
@@ -169,4 +185,26 @@ void Camera::LookAt(float *target)
             };
 
     memcpy(this->viewMatrix, matrix, 16 * sizeof(float));
+}
+
+/*
+ * Shoot update openGL buffers on the given program
+ */
+void Camera::Shoot(GLuint program) {
+    /* Associate program with uniform shader matrices */
+    GLint projectionUniform = glGetUniformLocation(program, "ProjectionMatrix");
+    if (projectionUniform == -1)
+    {
+        fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
+        exit(-1);
+    }
+    glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, projectionMatrix);
+
+    GLint ViewUniform = glGetUniformLocation(program, "ViewMatrix");
+    if (ViewUniform == -1)
+    {
+        fprintf(stderr, "Could not bind uniform ViewMatrix\n");
+        exit(-1);
+    }
+    glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, viewMatrix);
 }

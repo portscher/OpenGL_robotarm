@@ -44,6 +44,8 @@ public:
 
     void UpdateZoom(ScrollWheelState *state);
 
+    void Shoot(GLuint program);
+
     float projectionMatrix[16];
     float viewMatrix[16];
 };
