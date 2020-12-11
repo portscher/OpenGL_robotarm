@@ -268,16 +268,17 @@ int main(int argc, char **argv)
     Initialize();
 
     Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
-    string firstLimbObj = "../models/segment1.obj";
+    string firstLimbObj = "../models/segment.obj";
     Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
-    string secondLimbObj = "../models/segment1.obj";
+    string secondLimbObj = "../models/segment-2.obj";
     Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
     string thirdLimbObj = "../models/banana.obj";
 
     Arm arm(&camera);
-    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.5f);
-    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.5f);
-    arm.addLimb(thirdLimbObj, 2.3, COLOUR3, 0.25f);
+    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.3f);
+    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.3f);
+    arm.addLimb(thirdLimbObj, 1.45, COLOUR3, 0.25f);
+
 
     // TODO its a light parameter
     float ambientFactor = .5;
