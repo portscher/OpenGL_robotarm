@@ -31,13 +31,6 @@ float winHeight = 800.0f;
 /* window */
 GLFWwindow *window;
 
-Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
-std::string firstLimbObj = "../models/segment1.obj";
-Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
-std::string secondLimbObj = "../models/segment1.obj";
-Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
-std::string thirdLimbObj = "../models/banana.obj";
-
 KeyboardState keyboard = {
         .up = 0,
         .down = 0,
@@ -265,19 +258,31 @@ int main(int argc, char **argv)
 
     /* Setup shaders and shader program */
     GLuint ShaderProgram = CreateShaderProgram(
-            "../shaders/vertexshader.vs",
-            "../shaders/fragmentshader.fs"
+            "../shaders/phong.vs",
+            "../shaders/phong.fs"
             );
 
-    Camera camera;
+    Camera camera(Vector{0, 0, -17});
 
     /* Setup scene and rendering parameters */
     Initialize();
+
+    Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
+    string firstLimbObj = "../models/segment1.obj";
+    Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
+    string secondLimbObj = "../models/segment1.obj";
+    Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
+    string thirdLimbObj = "../models/banana.obj";
 
     Arm arm(&camera);
     arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.5f);
     arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.5f);
     arm.addLimb(thirdLimbObj, 2.3, COLOUR3, 0.25f);
+
+    // TODO its a light parameter
+    float ambientFactor = .5;
+    float diffuseFactor =  .2;
+    float specularFactor =  .4;
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))
@@ -289,11 +294,19 @@ int main(int argc, char **argv)
         camera.UpdatePosition(&keyboard, &mouse);
         camera.UpdateZoom(&scrollWheel);
 
-        // update camera
-        camera.Shoot(ShaderProgram);
+        glUseProgram(ShaderProgram);
 
         // draw scene
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // update camera
+        camera.Shoot(ShaderProgram);
+
+        // TODO should be on a method. like light.LightUp()
+        BindUniform1f("AmbientFactor", ShaderProgram, ambientFactor);
+        BindUniform1f("DiffuseFactor", ShaderProgram, diffuseFactor);
+        BindUniform1f("SpecularFactor", ShaderProgram, specularFactor);
+
         arm.display(ShaderProgram);
         /* Swap between front and back buffer */
         glfwSwapBuffers(window);

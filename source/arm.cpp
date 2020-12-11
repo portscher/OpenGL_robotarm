@@ -116,10 +116,10 @@ void Arm::display(GLint program)
     GLint size;
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-    GLint ModelUniform = glGetUniformLocation(program, "ModelMatrix");
+    GLint ModelUniform = glGetUniformLocation(program, "TransformMatrix");
     if (ModelUniform == -1)
     {
-        fprintf(stderr, "Could not bind uniform Model Matrix for cuboid.\n");
+        fprintf(stderr, "Could not bind uniform Transform Matrix for Arm.\n");
         exit(-1);
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, internal);
@@ -144,6 +144,6 @@ void Arm::display(GLint program)
     }
 }
 
-Camera Arm::getCamera() {
-    return *cam;
-}
+// Camera Arm::getCamera() {
+//     return *cam;
+// }

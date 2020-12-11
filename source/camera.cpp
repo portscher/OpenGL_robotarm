@@ -4,8 +4,8 @@
  * @brief Construct a new Camera object.
  *
  */
-Camera::Camera() :
-        currentPosition{0.0, 0.0, -17.0},
+Camera::Camera(const Vector pos) :
+        currentPosition{pos.x, pos.y, pos.z},
         direction{0.0, 0.0, 0.0},
         up{0.0, 1.0, 0.0},
         xAngle(-90.0f),

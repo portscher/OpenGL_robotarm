@@ -62,18 +62,20 @@ void main()
 {
     // Read color at UVcoords position in the texture
     // vec4 TexColor = texture2D(tex, UVcoords);
-    vec4 TexColor = color;
-    vec3 result = TexColor.rgb; // default value to current texture color
+    vec4 TexColor = vec4(color, 1);
+    // vec3 result = TexColor.rgb; // default value to current texture color
 
     // if (isSun == 0) {
         // normalize vector again, in case its not unit anymore
         // because of interpolation
         vec3 normal = normalize(normalInt);
 
-        vec3 lightFactor = calculatePhong(normal, vertPosInt, lights[0]);
-        for(int i = 1; i < LIGHT_COUNT; i++){
-            lightFactor += calculatePhong(normal, vertPosInt, lights[i]);
-        }
+        Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
+        vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
+        // vec3 lightFactor = calculatePhong(normal, vertPosInt, lights[0]);
+        // for(int i = 1; i < LIGHT_COUNT; i++){
+        //     lightFactor += calculatePhong(normal, vertPosInt, lights[i]);
+        // }
 
         // Ambient Reflection: I_A = k_A * I_L
         // k_A: AmbientFactor

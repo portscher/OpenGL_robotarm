@@ -281,8 +281,8 @@ GLuint CreateShaderProgram(string vsPath, string fsPath)
     const char *FragmentShaderString;
 
     /* Load shader code from file */
-    VertexShaderString = LoadShader("../shaders/vertexshader.vs");
-    FragmentShaderString = LoadShader("../shaders/fragmentshader.fs");
+    VertexShaderString = LoadShader(vsPath.c_str());
+    FragmentShaderString = LoadShader(fsPath.c_str());
 
     /* Separately add vertex and fragment shader to program */
     AddShader(ShaderProgram, VertexShaderString, GL_VERTEX_SHADER);
@@ -331,4 +331,11 @@ float constrainAngle(float x)
     if (x < 0)
         x += 360;
     return x;
+}
+
+/* A value is saved in a buffer at the GPU */
+void BindUniform1f(const string name, GLuint program, float val)
+{
+    GLint uniform = glGetUniformLocation(program, name.c_str());
+    glUniform1f(uniform, val);
 }

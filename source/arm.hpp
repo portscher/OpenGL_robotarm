@@ -37,7 +37,7 @@ public:
 
     static float getCurrentRotationAt(int axis, Limb *limb);
 
-    Camera Arm::getCamera();
+    // Camera Arm::getCamera();
 };
 
 #endif /* ARM_H */
