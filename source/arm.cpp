@@ -11,7 +11,7 @@ Arm::Arm(Camera *_cam) :
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    readMeshFile("../models/base.obj", 1.5f, baseColour, &CBO, &NBO, &VAO);
+    readMeshFile("../models/base.obj", 1.0f, baseColour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
 }
 
