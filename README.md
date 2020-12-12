@@ -39,3 +39,13 @@ Additional keyboard controls:
 
 Mouse wheel:
 - Also controls the zoom
+
+## Mesh files
+
+The meshes for the base and the banana were downloaded from www.free3d.com, the rest was created using Blender.
+All of them were edited, and in particular triangluated and smoothened, using Blender.
+
+Sources:
+- Banana: https://free3d.com/3d-model/banana-23586.html
+- Base: https://free3d.com/3d-model/baseball-base--838565.html
+
