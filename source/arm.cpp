@@ -138,6 +138,7 @@ void Arm::display(GLint program)
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
 
+    glBindVertexArray(0);
     for (auto limb : limbs)
     {
         limb->display(program);
