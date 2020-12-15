@@ -263,8 +263,6 @@ int main(int argc, char **argv)
             "../shaders/phong.fs"
             );
 
-
-
     Camera camera(Vector{0, 0, -17});
 
     /* Setup scene and rendering parameters */
