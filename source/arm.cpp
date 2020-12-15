@@ -11,7 +11,10 @@ Arm::Arm(Camera *_cam) :
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    readMeshFile("../models/base.obj", 1.5f, baseColour, &CBO, &NBO, &VAO);
+    string modelPath = "../models/base.obj";
+    string texturePath = "../textures/wood.bmp";
+    SetupTexture(&TextureID, texturePath.c_str());
+    readMeshFile(modelPath, 1.5f, baseColour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
 }
 
