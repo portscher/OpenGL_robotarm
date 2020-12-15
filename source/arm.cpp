@@ -148,7 +148,7 @@ void Arm::display(GLint program)
     glBindTexture(GL_TEXTURE_2D, TextureID);
 
     /* Get texture uniform handle from fragment shader */
-    TextureUniform  = glGetUniformLocation(program, "myTextureSampler");
+    TextureUniform  = glGetUniformLocation(program, "tex");
     /* Set location of uniform sampler variable */
     glUniform1i(TextureUniform, 0);
 

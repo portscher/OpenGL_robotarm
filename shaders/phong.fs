@@ -5,8 +5,7 @@ uniform float SpecularFactor;
 uniform float AmbientFactor;
 uniform mat4 ViewMatrix;
 
-uniform sampler2D myTextureSampler;
-uniform int UseTexture;
+uniform sampler2D tex;
 
 in vec3 color;
 in vec3 normalInt;
@@ -62,9 +61,8 @@ vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
 void main()
 {
     // Read color at UVcoords position in the texture
-    vec4 TexColor = texture2D(myTextureSampler, UVcoords);
-    FragColor = TexColor;
-    // vec3 result = TexColor.rgb; // default value to current texture color
+    vec4 TexColor = texture2D(tex, UVcoords);
+    //vec3 result = TexColor.rgb; // default value to current texture color
 
     // if (isSun == 0) {
         // normalize vector again, in case its not unit anymore
@@ -84,6 +82,7 @@ void main()
         vec3 ambientPart = vec3(TexColor * AmbientFactor);
         vec3 result = (lightFactor + ambientPart);
 
+        FragColor = vec4(TexColor.xyz * result, 1.);
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
     // } else {
     //     FragColor = vec4(result, 1.);
