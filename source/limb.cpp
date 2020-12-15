@@ -7,7 +7,7 @@
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector colour, float scale) :
+Limb::Limb(Arm *_arm, int _ID, std::string filename, string texture, float _position[3], Vector colour, float scale) :
         arm(_arm), rotationX(0), rotationY(0), rotationZ(0),
         position{_position[0], _position[1], _position[2]},
         internal{0}, transformation{0}, model{0}
@@ -15,6 +15,7 @@ Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector 
     ID = _ID;
 
     readMeshFile(filename, scale, colour, &CBO, &NBO, &VAO);
+    SetupTexture(&TextureID, texture.c_str());
     SetIdentityMatrix(internal);
     SetRotationZ(270, internal);
     SetIdentityMatrix(transformation);
@@ -134,6 +135,25 @@ void Limb::display(GLint program)
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
+
+    /* Activate first (and only) texture unit */
+    glActiveTexture(GL_TEXTURE0);
+
+    /* Bind current texture  */
+    glBindTexture(GL_TEXTURE_2D, TextureID);
+
+    /* Get texture uniform handle from fragment shader */
+    TextureUniform  = glGetUniformLocation(program, "myTextureSampler");
+    /* Set location of uniform sampler variable */
+    glUniform1i(TextureUniform, 0);
+
+    /* Uniform integer used to enable/disable texture mapping */
+    GLint UseTexUniform = glGetUniformLocation(program, "UseTexture");
+
+
+    glUniform1i(UseTexUniform, 1);
+    /* Use filled polygons rendering */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glBindVertexArray(0);
 }

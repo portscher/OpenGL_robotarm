@@ -5,12 +5,13 @@ uniform float SpecularFactor;
 uniform float AmbientFactor;
 uniform mat4 ViewMatrix;
 
-// uniform sampler2D tex;
+uniform sampler2D myTextureSampler;
+uniform int UseTexture;
 
 in vec3 color;
 in vec3 normalInt;
 in vec3 vertPosInt;
-// in vec2 UVcoords; // coordinates of fragment
+in vec2 UVcoords; // coordinates of fragment
 
 #define LIGHT_COUNT 3
 struct Light {
@@ -61,8 +62,8 @@ vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
 void main()
 {
     // Read color at UVcoords position in the texture
-    // vec4 TexColor = texture2D(tex, UVcoords);
-    vec4 TexColor = vec4(color, 1);
+    vec4 TexColor = texture2D(myTextureSampler, UVcoords);
+    FragColor = TexColor;
     // vec3 result = TexColor.rgb; // default value to current texture color
 
     // if (isSun == 0) {
@@ -83,7 +84,6 @@ void main()
         vec3 ambientPart = vec3(TexColor * AmbientFactor);
         vec3 result = (lightFactor + ambientPart);
 
-        FragColor = vec4(TexColor.xyz * result, 1.);
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
     // } else {
     //     FragColor = vec4(result, 1.);

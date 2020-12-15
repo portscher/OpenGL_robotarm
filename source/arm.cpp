@@ -11,7 +11,7 @@ Arm::Arm(Camera *_cam) :
 {
     // base
     Vector baseColour = {0.9f, 0.9f, 0.5f};
-    readMeshFile("../models/base.obj", 1.0f, baseColour, &CBO, &NBO, &VAO);
+    readMeshFile("../models/base.obj", 1.5f, baseColour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
 }
 
@@ -22,7 +22,7 @@ Arm::Arm(Camera *_cam) :
 * @param w = width
 * @param h = height
 *******************************************************************/
-void Arm::addLimb(string filename, float offset, Vector colour, float scale)
+void Arm::addLimb(string filename, string texture, float offset, Vector colour, float scale)
 {
     int currentIndex = limbs.size() - 1;
 
@@ -33,7 +33,7 @@ void Arm::addLimb(string filename, float offset, Vector colour, float scale)
 
     float pos[] = {center, offset, center};
 
-    limbs.push_back(new Limb(this, currentIndex, filename, pos, colour, scale));
+    limbs.push_back(new Limb(this, currentIndex, filename, texture, pos, colour, scale));
 }
 
 /******************************************************************
@@ -137,6 +137,26 @@ void Arm::display(GLint program)
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
+
+    /* Activate first (and only) texture unit */
+    glActiveTexture(GL_TEXTURE0);
+
+    /* Bind current texture  */
+    glBindTexture(GL_TEXTURE_2D, TextureID);
+
+    /* Get texture uniform handle from fragment shader */
+    TextureUniform  = glGetUniformLocation(program, "myTextureSampler");
+    /* Set location of uniform sampler variable */
+    glUniform1i(TextureUniform, 0);
+
+    /* Uniform integer used to enable/disable texture mapping */
+    GLint UseTexUniform = glGetUniformLocation(program, "UseTexture");
+
+
+    glUniform1i(UseTexUniform, 1);
+    /* Use filled polygons rendering */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 
     glBindVertexArray(0);
     for (auto limb : limbs)

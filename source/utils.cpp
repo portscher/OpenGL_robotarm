@@ -1,6 +1,7 @@
 #include "Vector.hpp"
 #include "utils.hpp"
 #include "OBJParser.hpp"            /* Loading function for triangle meshes in OBJ format */
+#include "LoadTexture.hpp"
 
 /******************************************************************
 *
@@ -16,6 +17,8 @@ void readMeshFile(string filename, float scale, Vector rgb,
 {
     GLuint VBO;
     GLuint IBO;
+    GLuint UVBO;
+
     /* Structure for loading of OBJ data */
     obj_scene_data data;
 
@@ -32,12 +35,13 @@ void readMeshFile(string filename, float scale, Vector rgb,
     GLfloat* vertex_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
     GLfloat* color_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
     GLfloat* normal_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
+    GLfloat* uv_buffer_data = (GLfloat*) calloc (indx*6, sizeof(GLfloat));
 
     /* for each triangle... */
     for(int i=0; i<indx; i++)
     {
         int offset3D = i*9;
-        // int offset2D = i*6;
+        int offset2D = i*6;
 
         /* fill VBO for this triangle (x,y,z coords for 3 vertices = 9 values) */
         for(int j=0; j<3; j++)
@@ -70,6 +74,17 @@ void readMeshFile(string filename, float scale, Vector rgb,
             }
         }
 
+        /* fill UV buffer for this triangle */
+        if( (*data.face_list[i]).texture_index[0] != -1 )
+        {
+            for(int j=0; j<3; j++)
+            {
+                int idUV = (GLushort)(*data.face_list[i]).texture_index[j];
+                uv_buffer_data[offset2D + j*2 ] = (GLfloat)(*data.vertex_texture_list[idUV]).e[0];
+                uv_buffer_data[offset2D + j*2 + 1] = (GLfloat)(*data.vertex_texture_list[idUV]).e[1];
+            }
+        }
+
         /* fill Color buffer for this triangle */
         for(int j=0; j<3; j++)
         {
@@ -98,6 +113,9 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glBindBuffer(GL_ARRAY_BUFFER, *NBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
 
+    glGenBuffers(1, &UVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, UVBO);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count*6*sizeof(GLfloat), uv_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -123,10 +141,72 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glBindBuffer(GL_ARRAY_BUFFER, *NBO);
     glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
 
+    /* Bind uv buffer */
+    glEnableVertexAttribArray(vUV);
+    glBindBuffer(GL_ARRAY_BUFFER, UVBO);
+    glVertexAttribPointer(vUV, 2, GL_FLOAT,GL_FALSE, 0, nullptr);
+
     /* Bind index buffer */
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
     glBindVertexArray(0);
+}
+
+/******************************************************************
+*
+* SetupTexture
+*
+* This function is called to load the texture and initialize
+* texturing parameters
+*
+* Input: TextureID = id of the texture to setup
+*        filename = path to bitmap file to read
+*******************************************************************/
+
+void SetupTexture(GLuint *TextureID, const char* filename)
+{
+    /* Allocate texture container */
+    TextureDataPtr* Texture = (TextureDataPtr*)malloc(sizeof(TextureDataPtr));
+
+    int success = LoadTexture(filename, Texture);
+    if (!success)
+    {
+        printf("Error loading texture. Exiting.\n");
+        exit(-1);
+    }
+
+    /* Create texture name and store in handle */
+    glGenTextures(1, TextureID);
+
+    /* Bind texture */
+    glBindTexture(GL_TEXTURE_2D, *TextureID);
+
+    /* Load texture image into memory */
+    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
+                 0,                 /* Base level */
+                 GL_RGB,            /* Each element is RGB triple */
+                 Texture->width,    /* Texture dimensions */
+                 Texture->height,
+                 0,                 /* Border should be zero */
+                 GL_BGR,            /* Data storage format for BMP file */
+                 GL_UNSIGNED_BYTE,  /* Type of pixel data, one byte per channel */
+                 Texture->data);    /* Pointer to image data  */
+
+    /* Next set up texturing parameters */
+
+    /* Repeat texture on edges when tiling */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /* Linear interpolation for magnification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /* Trilinear MIP mapping for minification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /* Note: MIP mapping not visible due to fixed, i.e. static camera */
+
 }
 
 

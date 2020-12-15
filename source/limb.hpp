@@ -18,6 +18,7 @@ class Limb
 private:
     int ID;
     std::string filename;
+    std::string texture;
 
     Arm *arm;
 
@@ -37,6 +38,9 @@ private:
     float position[3];
     float colour[3];
 
+    GLuint TextureID;
+    GLuint TextureUniform;
+
     // internal is used for internal transformations like scale
     float internal[16];
     // transformation has rotations + translations
@@ -44,7 +48,7 @@ private:
     float model[16];
 
 public:
-    Limb(Arm *arm, int ID, std::string filename, float position[3], Vector colour, float scale);
+    Limb(Arm *arm, int ID, std::string filename, std::string texture, float position[3], Vector colour, float scale);
 
     void setRotation(int axis, float deg);
 

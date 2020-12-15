@@ -23,6 +23,7 @@
 #include "arm.hpp"
 #include "utils.hpp"
 #include "camera.hpp"
+#include "LoadTexture.hpp"   /* Loading function for BMP texture */
 
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -262,6 +263,8 @@ int main(int argc, char **argv)
             "../shaders/phong.fs"
             );
 
+
+
     Camera camera(Vector{0, 0, -17});
 
     /* Setup scene and rendering parameters */
@@ -269,15 +272,18 @@ int main(int argc, char **argv)
 
     Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
     string firstLimbObj = "../models/segment.obj";
+    string firstTexture = "../textures/stripes.bmp";
     Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
     string secondLimbObj = "../models/segment-2.obj";
+    string secondTexture = "../textures/metal.bmp";
     Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
     string thirdLimbObj = "../models/banana.obj";
+    string thirdTexture = "../textures/bricks.bmp";
 
     Arm arm(&camera);
-    arm.addLimb(firstLimbObj, 0.3, COLOUR1, 0.3f);
-    arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.3f);
-    arm.addLimb(thirdLimbObj, 1.45, COLOUR3, 0.25f);
+    arm.addLimb(firstLimbObj, firstTexture, 0.3, COLOUR1, 0.3f);
+    arm.addLimb(secondLimbObj, secondTexture, 1.7, COLOUR2, 0.3f);
+    arm.addLimb(thirdLimbObj, thirdTexture, 1.45, COLOUR3, 0.25f);
 
 
     // TODO its a light parameter
