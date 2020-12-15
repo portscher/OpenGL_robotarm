@@ -276,7 +276,9 @@ int main(int argc, char **argv)
     string secondTexture = "../textures/metal.bmp";
     Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
     string thirdLimbObj = "../models/banana.obj";
-    string thirdTexture = "../textures/bricks.bmp";
+    string thirdTexture = "../textures/malachite.bmp";
+
+    //TODO: Textures are not applied to to correct limb?
 
     Arm arm(&camera);
     arm.addLimb(firstLimbObj, firstTexture, 0.3, COLOUR1, 0.3f);
