@@ -17,13 +17,12 @@ class Light
     private:
         void LightUp(KeyboardState* keyboard);
         void LightDown(KeyboardState* keyboard);
-        
+        void Initialize(GLuint shaderProgram);        
 
     public:
         LightSettings settings;
         Light(LightSettings settings);
-        void Initialize(GLuint shaderProgram);
-        void Update(KeyboardState* keyboard);
+        void Update(GLuint shaderProgram, KeyboardState* keyboard);
 };
 
 #endif /* LIGHT_H */
