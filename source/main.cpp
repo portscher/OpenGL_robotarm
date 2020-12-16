@@ -23,6 +23,8 @@
 #include "arm.hpp"
 #include "utils.hpp"
 #include "camera.hpp"
+#include "light.hpp"
+#include "lightsetting.hpp"
 
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -37,6 +39,9 @@ KeyboardState keyboard = {
         .left = 0,
         .right = 0,
         .currentLimb = 0,
+        .lightMode = 0,
+        .lightUp = 0,
+        .lightDown = 0,
         .reset = 0,
 };
 
@@ -152,8 +157,34 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     {
         std::cout << "Bye!" << std::endl;
         exit(0);
+    } else if (key == GLFW_KEY_L && action == GLFW_PRESS)
+    {
+        if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
+               && action == GLFW_PRESS)
+        {
+            keyboard.lightUp = key - 48;
+        }
     }
-
+    else if (key == GLFW_KEY_KP_ADD)
+    {
+        if (action == GLFW_PRESS)
+        {
+            keyboard.lightUp = 1;
+        } else if (action == GLFW_RELEASE)
+        {
+            keyboard.lightUp = 0;
+        }
+    }
+    else if (key == GLFW_KEY_KP_SUBTRACT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            keyboard.lightUp = 1;
+        } else if (action == GLFW_RELEASE)
+        {
+            keyboard.lightUp = 0;
+        }
+    }
 }
 
 
@@ -279,11 +310,9 @@ int main(int argc, char **argv)
     arm.addLimb(secondLimbObj, 1.7, COLOUR2, 0.3f);
     arm.addLimb(thirdLimbObj, 1.45, COLOUR3, 0.25f);
 
-
-    // TODO its a light parameter
-    float ambientFactor = .5;
-    float diffuseFactor =  .2;
-    float specularFactor =  .4;
+    LightSettings lightSettings(0.5, 0.2, 0.4);
+    Light light(lightSettings);
+    light.Initialize(ShaderProgram);
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))
@@ -303,10 +332,7 @@ int main(int argc, char **argv)
         // update camera
         camera.Shoot(ShaderProgram);
 
-        // TODO should be on a method. like light.LightUp()
-        BindUniform1f("AmbientFactor", ShaderProgram, ambientFactor);
-        BindUniform1f("DiffuseFactor", ShaderProgram, diffuseFactor);
-        BindUniform1f("SpecularFactor", ShaderProgram, specularFactor);
+        light.Update(&keyboard);
 
         arm.display(ShaderProgram);
         /* Swap between front and back buffer */

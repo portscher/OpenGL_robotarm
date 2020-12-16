@@ -1,3 +1,4 @@
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -27,6 +28,9 @@ typedef struct keyboard
     int right;
     // 0: camera, 1-3: limb
     int currentLimb;
+    int lightMode;
+    int lightUp;
+    int lightDown;
     int reset;
 } KeyboardState;
 
