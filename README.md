@@ -4,15 +4,16 @@
 
 This project contains a simple simulated robot arm made with OpenGL and written in C++. 
 
-## How to run the project:
+## How to run the project
+
 - Clone
 - Execute:
-    - cd build
-    - cmake ..
-    - make
-    - ./assign_3
+  - cd build
+  - cmake ..
+  - make
+  - ./assign_3
 
-## Keyboard controls:
+## Keyboard controls
 
 First select which object you want to control:
 
@@ -49,8 +50,8 @@ Mouse wheel:
 
 Controlling light:
 
-- Plus at Numpad - Amplifies selected light effect
-- Minus at Numpad - Damplifies selected light effect
+- J - Amplifies selected light effect
+- N - Damplifies selected light effect
 
 ## Mesh files
 

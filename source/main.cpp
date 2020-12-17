@@ -162,7 +162,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     {
         keyboard.lightMode = key - 52;
     }
-    else if (key == GLFW_KEY_KP_ADD)
+    else if (key == GLFW_KEY_J)
     {
         if (action == GLFW_PRESS)
         {
@@ -172,7 +172,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
             keyboard.lightUp = 0;
         }
     }
-    else if (key == GLFW_KEY_KP_SUBTRACT)
+    else if (key == GLFW_KEY_N)
     {
         if (action == GLFW_PRESS)
         {
