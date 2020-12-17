@@ -23,7 +23,7 @@ layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
 vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
-    // vertex to lightsource vector (L)
+    // vertex to light source vector (L)
     vec3 lightPos = (ViewMatrix * vec4(light.position, 1.)).xyz;
     vec3 lightDir = normalize(lightPos - vertPos);
 

@@ -26,7 +26,6 @@ private:
     GLuint TextureUniform;
 
     float internal[16];
-    std::string filename;
     Camera *cam;
 
 public:

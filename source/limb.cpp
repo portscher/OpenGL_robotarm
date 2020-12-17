@@ -124,14 +124,6 @@ void Limb::display(GLint program)
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, model);
 
-    glEnableVertexAttribArray(vColor);
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glEnableVertexAttribArray(vNormal);
-    glBindBuffer(GL_ARRAY_BUFFER, NBO);
-    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);

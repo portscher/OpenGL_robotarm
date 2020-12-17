@@ -276,7 +276,7 @@ int main(int argc, char **argv)
     string secondTexture = "../textures/metal.bmp";
     Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
     string thirdLimbObj = "../models/banana.obj";
-    string thirdTexture = "../textures/malachite.bmp";
+    string thirdTexture = "../textures/wood.bmp";
 
     //TODO: Textures are not applied to to correct limb?
 
