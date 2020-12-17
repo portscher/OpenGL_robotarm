@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream>
 
 #include "OBJParser.hpp"
 #define WHITESPACE " \t\n\r"
@@ -217,10 +218,12 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 	FILE *mtl_file_stream;
 	
 	// open scene
-	mtl_file_stream = fopen( filename, "r");
-	if(mtl_file_stream == 0)
+	std::string newFilename = "../models/" + std::string(filename);
+	mtl_file_stream = fopen( newFilename.c_str(), "r");
+	if(mtl_file_stream == NULL)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filename);
+        std::cout << "Error at reading file: " << std::strerror(errno) << std::endl;
+		fprintf(stderr, "Error reading file: %s\n", newFilename.c_str());
 		return 0;
 	}
 		
@@ -360,38 +363,38 @@ int obj_parse_obj_file(obj_growable_scene_data *growable_data, const char *filen
 		//parse objects
 		else if( strequal(current_token, "v") ) //process vertex
 		{
-			list_add_item(&growable_data->vertex_list,  obj_parse_vector(), NULL);
+			list_add_item(&growable_data->vertex_list,  obj_parse_vector(), nullptr);
 		}
 		
 		else if( strequal(current_token, "vn") ) //process vertex normal
 		{
-			list_add_item(&growable_data->vertex_normal_list,  obj_parse_vector(), NULL);
+			list_add_item(&growable_data->vertex_normal_list,  obj_parse_vector(), nullptr);
 		}
 		
 		else if( strequal(current_token, "vt") ) //process vertex texture
 		{	
-			list_add_item(&growable_data->vertex_texture_list,  obj_parse_vector2(), NULL);
+			list_add_item(&growable_data->vertex_texture_list,  obj_parse_vector2(), nullptr);
 		}
 		
 		else if( strequal(current_token, "f") ) //process face
 		{
 			obj_face *face = obj_parse_face(growable_data);
 			face->material_index = current_material;
-			list_add_item(&growable_data->face_list, face, NULL);
+			list_add_item(&growable_data->face_list, face, nullptr);
 		}
 		
 		else if( strequal(current_token, "sp") ) //process sphere
 		{
 			obj_sphere *sphr = obj_parse_sphere(growable_data);
 			sphr->material_index = current_material;
-			list_add_item(&growable_data->sphere_list, sphr, NULL);
+			list_add_item(&growable_data->sphere_list, sphr, nullptr);
 		}
 		
 		else if( strequal(current_token, "pl") ) //process plane
 		{
 			obj_plane *pl = obj_parse_plane(growable_data);
 			pl->material_index = current_material;
-			list_add_item(&growable_data->plane_list, pl, NULL);
+			list_add_item(&growable_data->plane_list, pl, nullptr);
 		}
 		
 		else if( strequal(current_token, "p") ) //process point
@@ -403,21 +406,21 @@ int obj_parse_obj_file(obj_growable_scene_data *growable_data, const char *filen
 		{
 			obj_light_point *o = obj_parse_light_point(growable_data);
 			o->material_index = current_material;
-			list_add_item(&growable_data->light_point_list, o, NULL);
+			list_add_item(&growable_data->light_point_list, o, nullptr);
 		}
 		
 		else if( strequal(current_token, "ld") ) //process light disc
 		{
 			obj_light_disc *o = obj_parse_light_disc(growable_data);
 			o->material_index = current_material;
-			list_add_item(&growable_data->light_disc_list, o, NULL);
+			list_add_item(&growable_data->light_disc_list, o, nullptr);
 		}
 		
 		else if( strequal(current_token, "lq") ) //process light quad
 		{
 			obj_light_quad *o = obj_parse_light_quad(growable_data);
 			o->material_index = current_material;
-			list_add_item(&growable_data->light_quad_list, o, NULL);
+			list_add_item(&growable_data->light_quad_list, o, nullptr);
 		}
 		
 		else if( strequal(current_token, "c") ) //camera

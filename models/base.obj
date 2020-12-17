@@ -1,6 +1,6 @@
 # Blender v2.91.0 OBJ File: ''
 # www.blender.org
-mtllib models_base.mtl
+mtllib base.mtl
 o 10484_Baseball_Base_L3
 v 0.322070 0.331060 0.784735
 v 0.466080 0.340895 0.700140
