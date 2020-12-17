@@ -157,8 +157,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     {
         std::cout << "Bye!" << std::endl;
         exit(0);
-    } else if ((key == GLFW_KEY_4 || key == GLFW_KEY_5 || key == GLFW_KEY_6)
-               && action == GLFW_PRESS)
+    } else if ((key == GLFW_KEY_4 || key == GLFW_KEY_5 || key == GLFW_KEY_6) && action == GLFW_PRESS)
     {
         keyboard.lightMode = key - 52;
     }
@@ -328,7 +327,8 @@ int main(int argc, char **argv)
         // update camera
         camera.Shoot(ShaderProgram);
 
-        light.Update(ShaderProgram, &keyboard);
+        light.Update(&keyboard);
+        light.LightUpScene(ShaderProgram);
 
         arm.display(ShaderProgram);
         /* Swap between front and back buffer */

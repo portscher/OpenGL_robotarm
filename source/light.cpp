@@ -1,7 +1,10 @@
 #include "light.hpp"
 
+const int MaxValue = 10;
+const int MinValue = 0;
+
 /**
- * @brief Construct a new Light:: Light object
+ * @brief Construct a new Light object
  * 
  * @param settings The settings the light should have.
  */
@@ -16,7 +19,7 @@ Light::Light(LightSettings settings)
  * @param shaderProgram The instance of the shader for the current program.
  * @param keyboard The current keyboard state.
  */
-void Light::Update(GLuint shaderProgram, KeyboardState* keyboard)
+void Light::Update(KeyboardState* keyboard)
 {
     if (keyboard->lightUp)
     {
@@ -27,8 +30,6 @@ void Light::Update(GLuint shaderProgram, KeyboardState* keyboard)
     {
         this->LightDown(keyboard);
     }
-    
-    this->UpdateShader(shaderProgram);
 }
 
 /**
@@ -42,18 +43,18 @@ void Light::LightUp(KeyboardState* keyboard)
     if (keyboard->lightMode == 0)
     {
         this->settings.ambient += factor;
-        if (this->settings.ambient > 10)
+        if (this->settings.ambient > MaxValue)
         {
-            this->settings.ambient = 10;
+            this->settings.ambient = MaxValue;
         }        
     }
 
     if (keyboard->lightMode == 1)
     {
         this->settings.diffuse += factor;
-        if (this->settings.diffuse > 10)
+        if (this->settings.diffuse > MaxValue)
         {
-            this->settings.diffuse = 10;
+            this->settings.diffuse = MaxValue;
         }
     }
 
@@ -61,9 +62,9 @@ void Light::LightUp(KeyboardState* keyboard)
     {
         
         this->settings.specular += factor;
-        if (this->settings.specular > 10)
+        if (this->settings.specular > MaxValue)
         {
-            this->settings.specular = 10;
+            this->settings.specular = MaxValue;
         }
     }
 }
@@ -79,27 +80,27 @@ void Light::LightDown(KeyboardState* keyboard)
     if (keyboard->lightMode == 0)
     {
         this->settings.ambient -= factor;
-        if (this->settings.ambient < 0)
+        if (this->settings.ambient < MinValue)
         {
-            this->settings.ambient = 0;
+            this->settings.ambient = MinValue;
         }
     }
 
     if (keyboard->lightMode == 1)
     {
         this->settings.diffuse -= factor;
-        if (this->settings.diffuse < 0)
+        if (this->settings.diffuse < MinValue)
         {
-            this->settings.diffuse = 0;
+            this->settings.diffuse = MinValue;
         }
     }
 
     if (keyboard->lightMode == 2)
     {
         this->settings.specular -= factor;
-        if (this->settings.specular < 0)
+        if (this->settings.specular < MinValue)
         {
-            this->settings.specular = 0;
+            this->settings.specular = MinValue;
         }
     }
 }
@@ -109,7 +110,7 @@ void Light::LightDown(KeyboardState* keyboard)
  * 
  * @param shaderProgram The shader of the current program.
  */
-void Light::UpdateShader(GLuint shaderProgram)
+void Light::LightUpScene(GLuint shaderProgram)
 {
     BindUniform1f("AmbientFactor", shaderProgram, this->settings.ambient);
     BindUniform1f("DiffuseFactor", shaderProgram, this->settings.diffuse);
