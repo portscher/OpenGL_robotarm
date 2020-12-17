@@ -40,7 +40,6 @@ aux_source_directory("${CMAKE_CURRENT_SOURCE_DIR}/external/glew/src" PROJECT_SRC
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/external/glew/include")
 add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
 
-
 # Add executable for project
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
@@ -49,3 +48,6 @@ target_link_libraries(${PROJECT_NAME} glfw ${PROJECT_LIBRARIES} ${GLFW_LIBRARIES
 
 # Install executable
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
+# Copy models to the build folder
+file(COPY models DESTINATION ${CMAKE_BINARY_DIR})
