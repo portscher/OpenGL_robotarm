@@ -16,7 +16,6 @@ Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector 
 
     readMeshFile(filename, scale, colour, &CBO, &NBO, &VAO);
     SetIdentityMatrix(internal);
-    SetRotationZ(270, internal);
     SetIdentityMatrix(transformation);
     SetIdentityMatrix(model);
 }
