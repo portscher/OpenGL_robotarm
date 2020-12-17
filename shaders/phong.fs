@@ -5,12 +5,9 @@ uniform float SpecularFactor;
 uniform float AmbientFactor;
 uniform mat4 ViewMatrix;
 
-// uniform sampler2D tex;
-
 in vec3 color;
 in vec3 normalInt;
 in vec3 vertPosInt;
-// in vec2 UVcoords; // coordinates of fragment
 
 #define LIGHT_COUNT 3
 struct Light {
@@ -20,10 +17,9 @@ struct Light {
 uniform Light lights[LIGHT_COUNT];
 
 layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 BrightColor;
 
 vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
-    // vertex to lightsource vector (L)
+    // vertex to light source vector (L)
     vec3 lightPos = (ViewMatrix * vec4(light.position, 1.)).xyz;
     vec3 lightDir = normalize(lightPos - vertPos);
 
@@ -60,33 +56,20 @@ vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
 
 void main()
 {
-    // Read color at UVcoords position in the texture
-    // vec4 TexColor = texture2D(tex, UVcoords);
-    vec4 TexColor = vec4(color, 1);
-    // vec3 result = TexColor.rgb; // default value to current texture color
+    vec4 Color = vec4(color, 1);
 
-    // if (isSun == 0) {
-        // normalize vector again, in case its not unit anymore
-        // because of interpolation
-        vec3 normal = normalize(normalInt);
+    // normalize vector again, in case its not unit anymore
+    // because of interpolation
+    vec3 normal = normalize(normalInt);
 
-        Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
-        vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
-        // vec3 lightFactor = calculatePhong(normal, vertPosInt, lights[0]);
-        // for(int i = 1; i < LIGHT_COUNT; i++){
-        //     lightFactor += calculatePhong(normal, vertPosInt, lights[i]);
-        // }
+    Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
+    vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
 
-        // Ambient Reflection: I_A = k_A * I_L
-        // k_A: AmbientFactor
-        // I_L: Light at Surface Location (LightColor1???)
-        vec3 ambientPart = vec3(TexColor * AmbientFactor);
-        vec3 result = (lightFactor + ambientPart);
+    // Ambient Reflection: I_A = k_A * I_L
+    // k_A: AmbientFactor
+    // I_L: Light at Surface Location
+    vec3 ambientPart = vec3(Color * AmbientFactor);
+    vec3 result = (lightFactor + ambientPart);
 
-        FragColor = vec4(TexColor.xyz * result, 1.);
-        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
-    // } else {
-    //     FragColor = vec4(result, 1.);
-    //     BrightColor = vec4(result/**bloomFactor*/, 1.);
-    // }
+    FragColor = vec4(Color.xyz * result, 1.);
 }
