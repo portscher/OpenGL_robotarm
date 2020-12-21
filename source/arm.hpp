@@ -22,14 +22,16 @@ private:
     GLuint NBO; // normals
     GLuint CBO; // colors
 
+    GLuint TextureID;
+    GLuint TextureUniform;
+
     float internal[16];
-    std::string filename;
     Camera *cam;
 
 public:
     Arm(Camera *cam);
 
-    void addLimb(std::string filename, float offset, Vector colour, float scale);
+    void addLimb(std::string filename, string texture, float offset, Vector colour, float scale);
 
     void update(KeyboardState *state);
 

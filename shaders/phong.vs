@@ -13,11 +13,13 @@ uniform mat4 TransformMatrix;
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Color;
 layout (location = 2) in vec3 Normal;
+layout (location = 3) in vec2 UV;
 
 // varying variables will be passed to the fragment shader. This values also get interpolated between vertices
 out vec3 normalInt;
 out vec3 vertPosInt;
 out vec3 color;
+out vec2 UVcoords;
 
 void main()
 {
@@ -39,6 +41,7 @@ void main()
     vertPosInt = position.xyz;
 
     color = Color;
+    UVcoords = UV;
 
     gl_Position = modelViewProjectionMatrix * vec4(Position, 1.0);
 }

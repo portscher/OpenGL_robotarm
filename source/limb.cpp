@@ -2,12 +2,13 @@
 #include "utils.hpp"
 #include "Vector.hpp"
 
+using namespace std;
 /******************************************************************
 *
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector colour, float scale) :
+Limb::Limb(Arm *_arm, int _ID, string filename, string texture, float _position[3], Vector colour, float scale) :
         arm(_arm), rotationX(0), rotationY(0), rotationZ(0),
         position{_position[0], _position[1], _position[2]},
         internal{0}, transformation{0}, model{0}
@@ -15,6 +16,7 @@ Limb::Limb(Arm *_arm, int _ID, std::string filename, float _position[3], Vector 
     ID = _ID;
 
     readMeshFile(filename, scale, colour, &CBO, &NBO, &VAO);
+    SetupTexture(&TextureID, texture.c_str());
     SetIdentityMatrix(internal);
     SetIdentityMatrix(transformation);
     SetIdentityMatrix(model);
@@ -122,17 +124,12 @@ void Limb::display(GLint program)
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, model);
 
-    glEnableVertexAttribArray(vColor);
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glEnableVertexAttribArray(vNormal);
-    glBindBuffer(GL_ARRAY_BUFFER, NBO);
-    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
     glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, nullptr);
+
+    /* Bind current texture  */
+    glBindTexture(GL_TEXTURE_2D, TextureID);
 
     glBindVertexArray(0);
 }

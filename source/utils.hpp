@@ -17,7 +17,7 @@ using namespace std;
 /* Indices to vertex attributes; in this case position only */
 enum DataID
 {
-    vPosition = 0, vColor = 1, vNormal = 2
+    vPosition = 0, vColor = 1, vNormal = 2, vUV = 3
 };
 
 typedef struct keyboard
@@ -54,6 +54,8 @@ GLuint createCubeMesh(float width, float height);
 GLuint createCubeMesh(float width, float height, float *colour);
 void readMeshFile(string filename, float scale, Vector rgb,
         GLuint *CBO, GLuint *NBO, GLuint *VAO);
+
+void SetupTexture(GLuint *TextureID, const char* filename);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 

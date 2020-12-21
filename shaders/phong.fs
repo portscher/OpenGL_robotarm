@@ -5,9 +5,12 @@ uniform float SpecularFactor;
 uniform float AmbientFactor;
 uniform mat4 ViewMatrix;
 
+uniform sampler2D tex;
+
 in vec3 color;
 in vec3 normalInt;
 in vec3 vertPosInt;
+in vec2 UVcoords; // coordinates of fragment
 
 #define LIGHT_COUNT 3
 struct Light {
@@ -56,7 +59,9 @@ vec3 calculatePhong(vec3 normal, vec3 vertPos, Light light) {
 
 void main()
 {
-    vec4 Color = vec4(color, 1);
+    // Read color at UVcoords position in the texture
+    vec4 TexColor = texture2D(tex, UVcoords);
+    //vec3 result = TexColor.rgb; // default value to current texture color
 
     // normalize vector again, in case its not unit anymore
     // because of interpolation
@@ -68,8 +73,8 @@ void main()
     // Ambient Reflection: I_A = k_A * I_L
     // k_A: AmbientFactor
     // I_L: Light at Surface Location
-    vec3 ambientPart = vec3(Color * AmbientFactor);
+    vec3 ambientPart = vec3(TexColor * AmbientFactor);
     vec3 result = (lightFactor + ambientPart);
 
-    FragColor = vec4(Color.xyz * result, 1.);
+    FragColor = vec4(TexColor.xyz * result, 1.);
 }
