@@ -50,8 +50,8 @@ Mouse wheel:
 
 Controlling light:
 
-- J - Amplifies selected light effect
-- N - Damplifies selected light effect
+- J - Increase selected light effect
+- N - Decrease selected light effect
 
 ## Mesh files
 
