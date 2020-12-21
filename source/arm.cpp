@@ -13,7 +13,6 @@ Arm::Arm(Camera *_cam) :
     Vector baseColour = {0.9f, 0.2f, 0.5f};
     string modelPath = "../models/base.obj";
     string texturePath = "../textures/malachite.bmp";
-    readMeshFile("modelPath, texturePath, 1.0f, baseColour, &CBO, &NBO, &VAO);
 
     SetupTexture(&TextureID, texturePath.c_str());
     readMeshFile(modelPath, 1.5f, baseColour, &CBO, &NBO, &VAO);
