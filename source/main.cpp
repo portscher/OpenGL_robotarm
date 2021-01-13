@@ -312,7 +312,8 @@ int main(int argc, char **argv)
     arm.addLimb(secondLimbObj, secondTexture, 1.7, COLOUR2, 0.3f);
     arm.addLimb(thirdLimbObj, thirdTexture, 1.45, COLOUR3, 0.25f);
 
-    LightSettings lightSettings(0.5, 0.2, 0.4);
+                                                // position         // color
+    LightSettings lightSettings(0.5, 0.2, 0.4, Vector{5.0, 5.0, 5.0}, Vector{1, 0.5, 0});
     Light light(lightSettings);
 
     /* Rendering loop */

@@ -114,5 +114,23 @@ void Light::LightUpScene(GLuint shaderProgram)
 {
     BindUniform1f("AmbientFactor", shaderProgram, this->settings.ambient);
     BindUniform1f("DiffuseFactor", shaderProgram, this->settings.diffuse);
-    BindUniform1f("SpecularFactor", shaderProgram, this->settings.specular);    
+    BindUniform1f("SpecularFactor", shaderProgram, this->settings.specular);
+
+    int size = BindBasics(this->VBO, this->CBO, this->IBO, 0, 0);
+
+    // create light position matrix and resize
+    float pos[16];
+    SetTranslation(this->settings.position.x, this->settings.position.y, this->settings.position.z, pos);
+    
+    float scale[16];
+    SetScaleMatrix(.1, .1, .1, scale);
+    MultiplyMatrix(pos, scale, pos);
+    BindUniform4f("Transform", shaderProgram, pos);
+    
+    BindUniform3f("Color", shaderProgram, this->settings.color);
+    
+    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
+
+    BindUniform3f("light.position", shaderProgram, this->settings.position);
+    BindUniform3f("light.color", shaderProgram, this->settings.color);
 }

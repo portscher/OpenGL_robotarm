@@ -3,6 +3,7 @@
 
 #include "lightsetting.hpp"
 #include "utils.hpp"
+#include "Matrix.h"
 
 #include <iostream>
 
@@ -17,12 +18,16 @@ class Light
     private:
         void LightUp(KeyboardState* keyboard);
         void LightDown(KeyboardState* keyboard);
+        GLuint VBO;
+        GLuint CBO;
+        GLuint IBO;
               
     public:
         LightSettings settings;
         Light(LightSettings settings);
         void Update(KeyboardState* keyboard);
-        void LightUpScene(GLuint shaderProgram);  
+        void LightUpScene(GLuint shaderProgram);
+        
 };
 
 #endif /* LIGHT_H */

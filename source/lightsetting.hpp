@@ -1,6 +1,8 @@
 #ifndef LIGHT_SETTING_H
 #define LIGHT_SETTING_H
 
+#include "Vector.hpp"
+
 using namespace std;
 
 class LightSettings
@@ -9,7 +11,9 @@ class LightSettings
         float ambient;
         float diffuse;
         float specular;
-        LightSettings(float ambient, float diffuse, float specular);
+        Vector position;
+        Vector color;
+        LightSettings(float ambient, float diffuse, float specular, Vector position, Vector color);
         LightSettings();
 };
 
