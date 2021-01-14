@@ -23,7 +23,7 @@ char strequal(const char *s1, const char *s2)
 
 char contains(const char *haystack, const char *needle)
 {
-	if(strstr(haystack, needle) == NULL)
+	if(strstr(haystack, needle) == nullptr)
 		return 0;
 	return 1;
 }

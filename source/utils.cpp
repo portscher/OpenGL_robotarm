@@ -24,88 +24,87 @@ void readMeshFile(string filename, float scale, GLuint *NBO, GLuint *VAO)
     /* Load first OBJ model */
     int success = parse_obj_scene(&data, filename.c_str());
 
-    if(!success)
+    if (!success)
         printf("Could not load file. Exiting.\n");
 
     /*  Copy mesh data from structs into appropriate arrays */
     int indx = data.face_count;
 
-    GLushort* index_buffer_data = (GLushort*) calloc (indx*3, sizeof(GLushort));
-    GLfloat* vertex_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
-    GLfloat* normal_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
-    GLfloat* uv_buffer_data = (GLfloat*) calloc (indx*6, sizeof(GLfloat));
+    auto *index_buffer_data = (GLushort *) calloc(indx * 3, sizeof(GLushort));
+    auto *vertex_buffer_data = (GLfloat *) calloc(indx * 9, sizeof(GLfloat));
+    auto *normal_buffer_data = (GLfloat *) calloc(indx * 9, sizeof(GLfloat));
+    auto *uv_buffer_data = (GLfloat *) calloc(indx * 6, sizeof(GLfloat));
 
     /* for each triangle... */
-    for(int i=0; i<indx; i++)
+    for (int i = 0; i < indx; i++)
     {
-        int offset3D = i*9;
-        int offset2D = i*6;
+        int offset3D = i * 9;
+        int offset2D = i * 6;
 
         /* fill VBO for this triangle (x,y,z coords for 3 vertices = 9 values) */
-        for(int j=0; j<3; j++)
+        for (int j = 0; j < 3; j++)
         {
             /* Index of current vertex */
-            int idVert = (GLushort)(*data.face_list[i]).vertex_index[j];
-            vertex_buffer_data[offset3D + j*3 ] = (GLfloat)(*data.vertex_list[idVert]).e[0]*scale;
-            vertex_buffer_data[offset3D + j*3 + 1] = (GLfloat)(*data.vertex_list[idVert]).e[1]*scale;
-            vertex_buffer_data[offset3D + j*3 + 2] = (GLfloat)(*data.vertex_list[idVert]).e[2]*scale;
+            int idVert = (GLushort) (*data.face_list[i]).vertex_index[j];
+            vertex_buffer_data[offset3D + j * 3] = (GLfloat) (*data.vertex_list[idVert]).e[0] * scale;
+            vertex_buffer_data[offset3D + j * 3 + 1] = (GLfloat) (*data.vertex_list[idVert]).e[1] * scale;
+            vertex_buffer_data[offset3D + j * 3 + 2] = (GLfloat) (*data.vertex_list[idVert]).e[2] * scale;
         }
 
         /* fill Normal buffer for this triangle */
-        if( (*data.face_list[i]).normal_index[0] != -1 )
+        if ((*data.face_list[i]).normal_index[0] != -1)
         {
-            for(int j=0; j<3; j++)
+            for (int j = 0; j < 3; j++)
             {
-                int idNorm = (GLushort)(*data.face_list[i]).normal_index[j];
-                normal_buffer_data[offset3D + j*3 ] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[0];
-                normal_buffer_data[offset3D + j*3 + 1] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[1];
-                normal_buffer_data[offset3D + j*3 + 2] = (GLfloat)(*data.vertex_normal_list[idNorm]).e[2];
+                int idNorm = (GLushort) (*data.face_list[i]).normal_index[j];
+                normal_buffer_data[offset3D + j * 3] = (GLfloat) (*data.vertex_normal_list[idNorm]).e[0];
+                normal_buffer_data[offset3D + j * 3 + 1] = (GLfloat) (*data.vertex_normal_list[idNorm]).e[1];
+                normal_buffer_data[offset3D + j * 3 + 2] = (GLfloat) (*data.vertex_normal_list[idNorm]).e[2];
             }
-        }
-        else
+        } else
         {
-            for(int j=0; j<3; j++)
+            for (int j = 0; j < 3; j++)
             {
-                normal_buffer_data[offset3D + j*3 ] = vertex_buffer_data[offset3D + j*3 ];
-                normal_buffer_data[offset3D + j*3 + 1] = vertex_buffer_data[offset3D + j*3 + 1];
-                normal_buffer_data[offset3D + j*3 + 2] = vertex_buffer_data[offset3D + j*3 + 2];
+                normal_buffer_data[offset3D + j * 3] = vertex_buffer_data[offset3D + j * 3];
+                normal_buffer_data[offset3D + j * 3 + 1] = vertex_buffer_data[offset3D + j * 3 + 1];
+                normal_buffer_data[offset3D + j * 3 + 2] = vertex_buffer_data[offset3D + j * 3 + 2];
             }
         }
 
         /* fill UV buffer for this triangle */
-        if( (*data.face_list[i]).texture_index[0] != -1 )
+        if ((*data.face_list[i]).texture_index[0] != -1)
         {
-            for(int j=0; j<3; j++)
+            for (int j = 0; j < 3; j++)
             {
-                int idUV = (GLushort)(*data.face_list[i]).texture_index[j];
-                uv_buffer_data[offset2D + j*2 ] = (GLfloat)(*data.vertex_texture_list[idUV]).e[0];
-                uv_buffer_data[offset2D + j*2 + 1] = (GLfloat)(*data.vertex_texture_list[idUV]).e[1];
+                int idUV = (GLushort) (*data.face_list[i]).texture_index[j];
+                uv_buffer_data[offset2D + j * 2] = (GLfloat) (*data.vertex_texture_list[idUV]).e[0];
+                uv_buffer_data[offset2D + j * 2 + 1] = (GLfloat) (*data.vertex_texture_list[idUV]).e[1];
             }
         }
 
         /* Fill indices buffer for this triangles (3 indices) */
-        index_buffer_data[i*3] = i*3;
-        index_buffer_data[i*3+1] = i*3+1;
-        index_buffer_data[i*3+2] = i*3+2;
+        index_buffer_data[i * 3] = i * 3;
+        index_buffer_data[i * 3 + 1] = i * 3 + 1;
+        index_buffer_data[i * 3 + 2] = i * 3 + 2;
     }
 
 
     /* Create buffer objects and load data into buffers*/
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count * 9 * sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, NBO);
     glBindBuffer(GL_ARRAY_BUFFER, *NBO);
-    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count * 9 * sizeof(GLfloat), normal_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, &UVBO);
     glBindBuffer(GL_ARRAY_BUFFER, UVBO);
-    glBufferData(GL_ARRAY_BUFFER, data.face_count*6*sizeof(GLfloat), uv_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.face_count * 6 * sizeof(GLfloat), uv_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.face_count*3*sizeof(GLushort), index_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.face_count * 3 * sizeof(GLushort), index_buffer_data, GL_STATIC_DRAW);
 
 
     /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
@@ -120,12 +119,12 @@ void readMeshFile(string filename, float scale, GLuint *NBO, GLuint *VAO)
     /* Bind normal buffer */
     glEnableVertexAttribArray(vNormal);
     glBindBuffer(GL_ARRAY_BUFFER, *NBO);
-    glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     /* Bind uv buffer */
     glEnableVertexAttribArray(vUV);
     glBindBuffer(GL_ARRAY_BUFFER, UVBO);
-    glVertexAttribPointer(vUV, 2, GL_FLOAT,GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(vUV, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     /* Bind index buffer */
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -144,10 +143,10 @@ void readMeshFile(string filename, float scale, GLuint *NBO, GLuint *VAO)
 *        filename = path to bitmap file to read
 *******************************************************************/
 
-void SetupTexture(GLuint *TextureID, const char* filename)
+void SetupTexture(GLuint *TextureID, const char *filename)
 {
     /* Allocate texture container */
-    auto* Texture = (TextureDataPtr*)malloc(sizeof(TextureDataPtr));
+    auto *Texture = (TextureDataPtr *) malloc(sizeof(TextureDataPtr));
 
     int success = LoadTexture(filename, Texture);
     if (!success)
@@ -302,7 +301,7 @@ float constrainAngle(float x)
 }
 
 /* A value is saved in a buffer at the GPU */
-void BindUniform1f(const string name, GLuint program, float val)
+void BindUniform1f(const string& name, GLuint program, float val)
 {
     GLint uniform = glGetUniformLocation(program, name.c_str());
     glUniform1f(uniform, val);

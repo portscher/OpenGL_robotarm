@@ -17,10 +17,10 @@ class Limb
 {
 private:
     int ID;
+    Arm *arm;
+
     std::string filename;
     std::string texture;
-
-    Arm *arm;
 
     GLuint VAO;
     GLuint NBO; // normals

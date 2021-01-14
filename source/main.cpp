@@ -1,14 +1,3 @@
-/******************************************************************
-*
-* assign_1.cpp
-*
-* Interactive Graphics and Simulation Group
-* Institute of Computer Science
-* University of Innsbruck
-*
-*******************************************************************/
-
-
 /* Standard includes */
 #include <cstdio>
 #include <iostream>

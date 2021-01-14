@@ -14,9 +14,9 @@
 #ifndef STRING_EXTRA_H
 #define STRING_EXTRA_H
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 char strequal(const char *s1, const char *s2);
 char contains(const char *haystack, const char *needle);
 

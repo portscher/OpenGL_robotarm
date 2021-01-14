@@ -7,7 +7,7 @@
 *
 *******************************************************************/
 Arm::Arm(Camera *_cam) :
-    cam(_cam), internal{0}
+    internal{0}, cam(_cam)
 {
     // base
     string modelPath = "../models/base.obj";
@@ -129,7 +129,7 @@ void Arm::display(GLint program)
 
     glEnableVertexAttribArray(vNormal);
     glBindBuffer(GL_ARRAY_BUFFER, NBO);
-    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     /* Bind VAO of the current object */
     glBindVertexArray(VAO);
@@ -162,7 +162,3 @@ void Arm::display(GLint program)
         limb->display(program);
     }
 }
-
-// Camera Arm::getCamera() {
-//     return *cam;
-// }

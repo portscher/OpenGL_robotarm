@@ -36,7 +36,7 @@ private:
     void LookAt(float *target);
 
 public:
-    Camera(const Vector pos);
+    explicit Camera(Vector pos);
 
     void UpdatePosition(KeyboardState *keyboardState, MouseState *mouseState);
 

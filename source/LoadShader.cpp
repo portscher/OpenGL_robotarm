@@ -11,13 +11,8 @@
 *******************************************************************/
 
 /* Standard includes */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
+#include <cstdio>
+#include <cstdlib>
 
 /*----------------------------------------------------------------*/
 

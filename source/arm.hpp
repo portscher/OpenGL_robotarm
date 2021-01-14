@@ -25,10 +25,11 @@ private:
     GLuint TextureUniform;
 
     float internal[16];
+
     Camera *cam;
 
 public:
-    Arm(Camera *cam);
+    explicit Arm(Camera *cam);
 
     void addLimb(std::string filename, string texture, float offset, float scale);
 
@@ -37,8 +38,6 @@ public:
     void display(GLint ShaderProgram);
 
     static float getCurrentRotationAt(int axis, Limb *limb);
-
-    // Camera Arm::getCamera();
 };
 
 #endif /* ARM_H */
