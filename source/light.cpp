@@ -38,7 +38,7 @@ Light::Light(LightSettings settings, Vector position, Vector color)
  */
 void Light::Update(KeyboardState* keyboard)
 {
-    if (!keyboard->moveLight)
+    if (keyboard->currentLimb != 7)
     {
         if (keyboard->lightUp)
         {
@@ -51,7 +51,7 @@ void Light::Update(KeyboardState* keyboard)
         }
     }
  
-    if (keyboard->moveLight)
+    if (keyboard->currentLimb == 7)
     {
         this->MoveLight(keyboard);
         this->ChangeColor(keyboard);
