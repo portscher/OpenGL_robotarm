@@ -8,14 +8,14 @@ using namespace std;
 * Constructs a limb using the
 *
 *******************************************************************/
-Limb::Limb(Arm *_arm, int _ID, string filename, string texture, float _position[3], Vector colour, float scale) :
+Limb::Limb(Arm *_arm, int _ID, string filename, string texture, float _position[3], float scale) :
         arm(_arm), rotationX(0), rotationY(0), rotationZ(0),
         position{_position[0], _position[1], _position[2]},
         internal{0}, transformation{0}, model{0}
 {
     ID = _ID;
 
-    readMeshFile(filename, scale, colour, &CBO, &NBO, &VAO);
+    readMeshFile(filename, scale, &NBO, &VAO);
     SetupTexture(&TextureID, texture.c_str());
     SetIdentityMatrix(internal);
     SetIdentityMatrix(transformation);

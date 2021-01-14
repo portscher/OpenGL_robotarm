@@ -19,7 +19,7 @@ Light::Light(LightSettings settings)
  * @param shaderProgram The instance of the shader for the current program.
  * @param keyboard The current keyboard state.
  */
-void Light::Update(KeyboardState* keyboard)
+void Light::Update(KeyboardState *keyboard)
 {
     if (keyboard->lightUp)
     {
@@ -37,16 +37,16 @@ void Light::Update(KeyboardState* keyboard)
  * 
  * @param keyboard The current state of the keyboard.
  */
-void Light::LightUp(KeyboardState* keyboard)
+void Light::LightUp(KeyboardState *keyboard)
 {
-    double factor = 0.1; 
+    double factor = 0.1;
     if (keyboard->lightMode == 0)
     {
         this->settings.ambient += factor;
         if (this->settings.ambient > MaxValue)
         {
             this->settings.ambient = MaxValue;
-        }        
+        }
     }
 
     if (keyboard->lightMode == 1)
@@ -60,7 +60,7 @@ void Light::LightUp(KeyboardState* keyboard)
 
     if (keyboard->lightMode == 2)
     {
-        
+
         this->settings.specular += factor;
         if (this->settings.specular > MaxValue)
         {
@@ -74,7 +74,7 @@ void Light::LightUp(KeyboardState* keyboard)
  * 
  * @param keyboard The current state of the keyboard.
  */
-void Light::LightDown(KeyboardState* keyboard)
+void Light::LightDown(KeyboardState *keyboard)
 {
     double factor = 0.1;
     if (keyboard->lightMode == 0)
@@ -114,5 +114,5 @@ void Light::LightUpScene(GLuint shaderProgram)
 {
     BindUniform1f("AmbientFactor", shaderProgram, this->settings.ambient);
     BindUniform1f("DiffuseFactor", shaderProgram, this->settings.diffuse);
-    BindUniform1f("SpecularFactor", shaderProgram, this->settings.specular);    
+    BindUniform1f("SpecularFactor", shaderProgram, this->settings.specular);
 }

@@ -1,4 +1,3 @@
-#include "Vector.hpp"
 #include "utils.hpp"
 #include "OBJParser.hpp"            /* Loading function for triangle meshes in OBJ format */
 #include "LoadTexture.hpp"
@@ -8,12 +7,12 @@
 * @brief This function read the content of an OBJ file and then fill the
 * buffer objects with the data
 *
-* @param filename = name of file.obj
+* @param filename = name of mesh file
 * @param scale = scale factor applied to the vertices
-* @param rgb = 3D vector containing the color of the object (r=x, g=y, b=z)
+* @param NBO = reference to normals buffer object
+* @param VAO = reference to VAO
 *******************************************************************/
-void readMeshFile(string filename, float scale, Vector rgb,
-        GLuint *CBO, GLuint *NBO, GLuint *VAO)
+void readMeshFile(string filename, float scale, GLuint *NBO, GLuint *VAO)
 {
     GLuint VBO;
     GLuint IBO;
@@ -33,7 +32,6 @@ void readMeshFile(string filename, float scale, Vector rgb,
 
     GLushort* index_buffer_data = (GLushort*) calloc (indx*3, sizeof(GLushort));
     GLfloat* vertex_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
-    GLfloat* color_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
     GLfloat* normal_buffer_data = (GLfloat*) calloc (indx*9, sizeof(GLfloat));
     GLfloat* uv_buffer_data = (GLfloat*) calloc (indx*6, sizeof(GLfloat));
 
@@ -85,14 +83,6 @@ void readMeshFile(string filename, float scale, Vector rgb,
             }
         }
 
-        /* fill Color buffer for this triangle */
-        for(int j=0; j<3; j++)
-        {
-            color_buffer_data[offset3D + j*3 ] = (GLfloat)(rgb.x);
-            color_buffer_data[offset3D + j*3 + 1] = (GLfloat)(rgb.y);
-            color_buffer_data[offset3D + j*3 + 2] = (GLfloat)(rgb.z);
-        }
-
         /* Fill indices buffer for this triangles (3 indices) */
         index_buffer_data[i*3] = i*3;
         index_buffer_data[i*3+1] = i*3+1;
@@ -104,10 +94,6 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), vertex_buffer_data, GL_STATIC_DRAW);
-
-    glGenBuffers(1, CBO);
-    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
-    glBufferData(GL_ARRAY_BUFFER, data.face_count*9*sizeof(GLfloat), color_buffer_data, GL_STATIC_DRAW);
 
     glGenBuffers(1, NBO);
     glBindBuffer(GL_ARRAY_BUFFER, *NBO);
@@ -130,11 +116,6 @@ void readMeshFile(string filename, float scale, Vector rgb,
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glEnableVertexAttribArray(vPosition);
     glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Bind color buffer */
-    glBindBuffer(GL_ARRAY_BUFFER, *CBO);
-    glEnableVertexAttribArray(vColor);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, nullptr);
 
     /* Bind normal buffer */
     glEnableVertexAttribArray(vNormal);
@@ -166,7 +147,7 @@ void readMeshFile(string filename, float scale, Vector rgb,
 void SetupTexture(GLuint *TextureID, const char* filename)
 {
     /* Allocate texture container */
-    TextureDataPtr* Texture = (TextureDataPtr*)malloc(sizeof(TextureDataPtr));
+    auto* Texture = (TextureDataPtr*)malloc(sizeof(TextureDataPtr));
 
     int success = LoadTexture(filename, Texture);
     if (!success)
@@ -207,99 +188,6 @@ void SetupTexture(GLuint *TextureID, const char* filename)
 
     /* Note: MIP mapping not visible due to fixed, i.e. static camera */
 
-}
-
-
-/******************************************************************
-*
-* @brief This function creates a cube mesh and fills buffer objects with
-* the geometry.
-*
-* @param width of the object
-* @param height of the object
-* @param colour of the object, as RGB values
-*
-*******************************************************************/
-GLuint createCubeMesh(float width, float height, float *colour)
-{
-    GLuint VAO;
-    GLuint VBO;
-    GLuint IBO;
-    GLuint CBO;
-
-    float depth = width;
-    GLfloat vertex_buffer_data[] = { /* 8 cube vertices XYZ */
-            0., 0., depth,
-            width, 0., depth,
-            width, height, depth,
-            0., height, depth,
-
-            0., 0., 0.,
-            width, 0., 0.,
-            width, height, 0.,
-            0., height, 0.,
-    };
-
-    GLfloat color_buffer_data[] = { /* RGB color values for 8 vertices */
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2],
-            colour[0], colour[1], colour[2]
-    };
-
-    GLushort index_buffer_data[] = { /* Indices of 6*2 triangles (6 sides) */
-            0, 1, 2,
-            2, 3, 0,
-            1, 5, 6,
-            6, 2, 1,
-            7, 6, 5,
-            5, 4, 7,
-            4, 0, 3,
-            3, 7, 4,
-            4, 5, 1,
-            1, 0, 4,
-            3, 2, 6,
-            6, 7, 3,
-    };
-
-    /* Generate and write vertex buffer data */
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate and write color buffer data */
-    glGenBuffers(1, &CBO);
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color_buffer_data), color_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate and write index buffer data */
-    glGenBuffers(1, &IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer_data), index_buffer_data, GL_STATIC_DRAW);
-
-    /* Generate vertex array object and fill it with VBO, CBO and IBO previously written*/
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    /* Bind buffer with vertex data of currently active object */
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glEnableVertexAttribArray(vPosition);
-    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Bind color buffer */
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
-    glEnableVertexAttribArray(vColor);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Bind index buffer */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-
-    glBindVertexArray(0);
-
-    return VAO;
 }
 
 

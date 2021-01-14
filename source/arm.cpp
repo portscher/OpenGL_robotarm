@@ -10,12 +10,11 @@ Arm::Arm(Camera *_cam) :
     cam(_cam), internal{0}
 {
     // base
-    Vector baseColour = {0.9f, 0.2f, 0.5f};
     string modelPath = "../models/base.obj";
     string texturePath = "../textures/malachite.bmp";
 
     SetupTexture(&TextureID, texturePath.c_str());
-    readMeshFile(modelPath, 1.5f, baseColour, &CBO, &NBO, &VAO);
+    readMeshFile(modelPath, 1.5f, &NBO, &VAO);
     SetIdentityMatrix(internal);
 }
 
@@ -26,7 +25,7 @@ Arm::Arm(Camera *_cam) :
 * @param w = width
 * @param h = height
 *******************************************************************/
-void Arm::addLimb(string filename, string texture, float offset, Vector colour, float scale)
+void Arm::addLimb(string filename, string texture, float offset, float scale)
 {
     int currentIndex = limbs.size() - 1;
 
@@ -37,7 +36,7 @@ void Arm::addLimb(string filename, string texture, float offset, Vector colour, 
 
     float pos[] = {center, offset, center};
 
-    limbs.push_back(new Limb(this, currentIndex, filename, texture, pos, colour, scale));
+    limbs.push_back(new Limb(this, currentIndex, filename, texture, pos, scale));
 }
 
 /******************************************************************
@@ -127,11 +126,6 @@ void Arm::display(GLint program)
         exit(-1);
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, internal);
-
-
-    glEnableVertexAttribArray(vColor);
-    glBindBuffer(GL_ARRAY_BUFFER, CBO);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glEnableVertexAttribArray(vNormal);
     glBindBuffer(GL_ARRAY_BUFFER, NBO);

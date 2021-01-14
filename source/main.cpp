@@ -19,13 +19,11 @@
 #include <GLFW/glfw3.h>
 
 /* Local includes */
-#include "Matrix.h"        /* Functions for matrix handling */
 #include "arm.hpp"
 #include "utils.hpp"
 #include "camera.hpp"
 #include "light.hpp"
 #include "lightsetting.hpp"
-#include "LoadTexture.hpp"   /* Loading function for BMP texture */
 
 /* Window parameters */
 float winWidth = 1000.0f;
@@ -161,8 +159,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
     } else if ((key == GLFW_KEY_4 || key == GLFW_KEY_5 || key == GLFW_KEY_6) && action == GLFW_PRESS)
     {
         keyboard.lightMode = key - 52;
-    }
-    else if (key == GLFW_KEY_J)
+    } else if (key == GLFW_KEY_J)
     {
         if (action == GLFW_PRESS)
         {
@@ -171,8 +168,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         {
             keyboard.lightUp = 0;
         }
-    }
-    else if (key == GLFW_KEY_N)
+    } else if (key == GLFW_KEY_N)
     {
         if (action == GLFW_PRESS)
         {
@@ -288,29 +284,18 @@ int main(int argc, char **argv)
     GLuint ShaderProgram = CreateShaderProgram(
             "../shaders/phong.vs",
             "../shaders/phong.fs"
-            );
+    );
 
     Camera camera(Vector{0, 0, -17});
 
     /* Setup scene and rendering parameters */
     Initialize();
 
-    Vector COLOUR1 = {0.0f, 0.3f, 0.5f};
-    string firstLimbObj = "../models/segment.obj";
-    string firstTexture = "../textures/stripes.bmp";
-    Vector COLOUR2 = {0.3f, 0.5f, 0.0f};
-    string secondLimbObj = "../models/segment-2.obj";
-    string secondTexture = "../textures/metal.bmp";
-    Vector COLOUR3 = {0.5f, 0.0f, 0.3f};
-    string thirdLimbObj = "../models/banana.obj";
-    string thirdTexture = "../textures/wood.bmp";
-
-    //TODO: Textures are not applied to to correct limb?
-
+    /* Initialize arm and add limbs */
     Arm arm(&camera);
-    arm.addLimb(firstLimbObj, firstTexture, 0.3, COLOUR1, 0.3f);
-    arm.addLimb(secondLimbObj, secondTexture, 1.7, COLOUR2, 0.3f);
-    arm.addLimb(thirdLimbObj, thirdTexture, 1.45, COLOUR3, 0.25f);
+    arm.addLimb("../models/segment.obj", "../textures/stripes.bmp", 0.3, 0.3f);
+    arm.addLimb("../models/segment-2.obj", "../textures/metal.bmp", 1.7, 0.3f);
+    arm.addLimb("../models/banana.obj", "../textures/wood.bmp", 1.45, 0.25f);
 
     LightSettings lightSettings(0.5, 0.2, 0.4);
     Light light(lightSettings);

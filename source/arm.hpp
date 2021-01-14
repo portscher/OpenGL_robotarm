@@ -20,7 +20,6 @@ private:
 
     GLuint VAO;
     GLuint NBO; // normals
-    GLuint CBO; // colors
 
     GLuint TextureID;
     GLuint TextureUniform;
@@ -31,7 +30,7 @@ private:
 public:
     Arm(Camera *cam);
 
-    void addLimb(std::string filename, string texture, float offset, Vector colour, float scale);
+    void addLimb(std::string filename, string texture, float offset, float scale);
 
     void update(KeyboardState *state);
 

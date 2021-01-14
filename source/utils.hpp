@@ -35,7 +35,6 @@ typedef struct keyboard
 } KeyboardState;
 
 
-
 typedef struct scrollWheel
 {
     float zoom;
@@ -50,12 +49,9 @@ typedef struct mouse
     float yAngle;
 } MouseState;
 
-GLuint createCubeMesh(float width, float height);
-GLuint createCubeMesh(float width, float height, float *colour);
-void readMeshFile(string filename, float scale, Vector rgb,
-        GLuint *CBO, GLuint *NBO, GLuint *VAO);
+void readMeshFile(string filename, float scale, GLuint *NBO, GLuint *VAO);
 
-void SetupTexture(GLuint *TextureID, const char* filename);
+void SetupTexture(GLuint *TextureID, const char *filename);
 
 void AddShader(GLuint UsedShaderProgram, const char *ShaderCode, GLenum ShaderType);
 

@@ -24,7 +24,6 @@ private:
 
     GLuint VAO;
     GLuint NBO; // normals
-    GLuint CBO; // colors
 
     float rotationX;
     float rotationY;
@@ -32,14 +31,11 @@ private:
 
     int angle;
 
-    // TODO make this a vector. and all 3xarrays
-    float _offset; // for now, it is only the y-offset
+    float _offset; // only the y-offset
 
     float position[3];
-    float colour[3];
 
     GLuint TextureID;
-    GLuint TextureUniform;
 
     // internal is used for internal transformations like scale
     float internal[16];
@@ -48,7 +44,7 @@ private:
     float model[16];
 
 public:
-    Limb(Arm *arm, int ID, std::string filename, std::string texture, float position[3], Vector colour, float scale);
+    Limb(Arm *arm, int ID, std::string filename, std::string texture, float position[3], float scale);
 
     void setRotation(int axis, float deg);
 
