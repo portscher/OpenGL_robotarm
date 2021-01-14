@@ -61,7 +61,6 @@ void main()
 {
     // Read color at UVcoords position in the texture
     vec4 TexColor = texture2D(tex, UVcoords);
-    //vec3 result = TexColor.rgb; // default value to current texture color
 
     // normalize vector again, in case its not unit anymore
     // because of interpolation
