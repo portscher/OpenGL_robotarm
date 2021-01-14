@@ -1,8 +1,6 @@
 #ifndef LIGHT_SETTING_H
 #define LIGHT_SETTING_H
 
-using namespace std;
-
 class LightSettings
 {
     public:

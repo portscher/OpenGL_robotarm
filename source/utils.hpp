@@ -59,6 +59,6 @@ GLuint CreateShaderProgram(string vsPath, string fsPath);
 
 float constrainAngle(float x);
 
-void BindUniform1f(const string name, GLuint program, float val);
+void BindUniform1f(const string& name, GLuint program, float val);
 
 #endif
