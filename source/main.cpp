@@ -44,6 +44,7 @@ KeyboardState keyboard = {
         .lightUp = 0,
         .lightDown = 0,
         .reset = 0,
+        .moveLight = 0,
 };
 
 ScrollWheelState scrollWheel
@@ -141,9 +142,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         {
             keyboard.right = 0;
         }
-    } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0)
+    } else if ((key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3 || key == GLFW_KEY_0 || key == GLFW_KEY_7)
                && action == GLFW_PRESS)
     {
+        keyboard.moveLight = 1;
         keyboard.currentLimb = key - 48; // GLFW_KEY_0 = 48
     } else if (key == GLFW_KEY_R)
     {
@@ -160,6 +162,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         exit(0);
     } else if ((key == GLFW_KEY_4 || key == GLFW_KEY_5 || key == GLFW_KEY_6) && action == GLFW_PRESS)
     {
+        keyboard.moveLight = 0;
         keyboard.lightMode = key - 52;
     }
     else if (key == GLFW_KEY_J)
@@ -312,9 +315,8 @@ int main(int argc, char **argv)
     arm.addLimb(secondLimbObj, secondTexture, 1.7, COLOUR2, 0.3f);
     arm.addLimb(thirdLimbObj, thirdTexture, 1.45, COLOUR3, 0.25f);
 
-                                                // position         // color
-    LightSettings lightSettings(0.5, 0.2, 0.4, Vector{5.0, 5.0, 5.0}, Vector{1, 0.5, 0});
-    Light light(lightSettings);
+    LightSettings lightSettings(0.5, 0.2, 0.4);
+    Light light(lightSettings, Vector{1.2, 1.0, 3.0}, Vector{1, 0.5, 0});
 
     /* Rendering loop */
     while (!glfwWindowShouldClose(window))

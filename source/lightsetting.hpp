@@ -11,9 +11,7 @@ class LightSettings
         float ambient;
         float diffuse;
         float specular;
-        Vector position;
-        Vector color;
-        LightSettings(float ambient, float diffuse, float specular, Vector position, Vector color);
+        LightSettings(float ambient, float diffuse, float specular);
         LightSettings();
 };
 

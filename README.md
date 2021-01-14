@@ -24,6 +24,7 @@ First select which object you want to control:
 - 4 - Ambient light effect
 - 5 - Diffuse light effect
 - 6 - specular light effect
+- 7 - light source
 
 When controlling the camera:
 
@@ -48,10 +49,25 @@ Mouse wheel:
 
 - Also controls the zoom
 
-Controlling light:
+Selected one of the light effects:
 
 - J - Increase selected light effect
 - N - Decrease selected light effect
+
+When controlling light:
+
+- W - moves the light right along the z-Axis.
+- S - moves the light left along the z-Axis.
+- A - moves the light right along the x-Axis.
+- D - moves the light left along the x-Axis.
+- J - selects the next light color.
+- N - selects the previous light color.
+- Available colors
+  - Red
+  - Green
+  - Blue
+  - Orange
+  - Yellow
 
 ## Mesh files
 

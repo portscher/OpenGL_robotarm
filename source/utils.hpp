@@ -32,6 +32,7 @@ typedef struct keyboard
     int lightUp;
     int lightDown;
     int reset;
+    int moveLight;
 } KeyboardState;
 
 
