@@ -307,3 +307,60 @@ void BindUniform1f(const string name, GLuint program, float val)
     GLint uniform = glGetUniformLocation(program, name.c_str());
     glUniform1f(uniform, val);
 }
+
+void BindUniform4f(const string name, GLuint program, float* val)
+{
+    GLint uniform = glGetUniformLocation(program, name.c_str());
+    glUniformMatrix4fv(uniform, 1, GL_TRUE, val);
+}
+
+
+void BindUniform3f(const string name, GLuint program, Vector val)
+{
+    GLint uniform = glGetUniformLocation(program, name.c_str());
+    glUniform3f(uniform, val.x, val.y, val.z);
+}
+
+/*
+ *  VBO vertex buffer object
+ *  CBO color buffe object
+ *  NBO normal buffer object
+ *  IBO index buffer object
+ *  UVBO uv buffer object
+ */
+int BindBasics(GLuint VBO, GLuint CBO, GLuint IBO, GLuint NBO, GLuint UVBO)
+{
+    /* Bind buffer with vertex data of currently active object */
+    glEnableVertexAttribArray(vPosition);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    /* Bind color buffer */
+    glEnableVertexAttribArray(vColor);
+    glBindBuffer(GL_ARRAY_BUFFER, CBO);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, 0);
+
+    /* Bind normal buffer */
+    if (NBO != 0) {
+        glEnableVertexAttribArray(vNormal);
+        glBindBuffer(GL_ARRAY_BUFFER, NBO);
+        glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, 0);
+    }
+
+    /* Bind uv buffer */
+    if (UVBO != 0) {
+        glEnableVertexAttribArray(vUV);
+        glBindBuffer(GL_ARRAY_BUFFER, UVBO);
+        glVertexAttribPointer(vUV, 2, GL_FLOAT,GL_FALSE, 0, 0);
+    }
+
+    /* Bind index buffer */
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+
+    GLint size;
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+
+    return size/sizeof(unsigned int);
+}
+
+

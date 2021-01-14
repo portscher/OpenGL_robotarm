@@ -1,6 +1,8 @@
 #ifndef LIGHT_SETTING_H
 #define LIGHT_SETTING_H
 
+#include "Vector.hpp"
+
 using namespace std;
 
 class LightSettings

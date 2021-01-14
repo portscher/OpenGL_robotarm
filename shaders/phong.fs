@@ -12,12 +12,11 @@ in vec3 normalInt;
 in vec3 vertPosInt;
 in vec2 UVcoords; // coordinates of fragment
 
-#define LIGHT_COUNT 3
 struct Light {
     vec3 position;
     vec3 color;
 };
-uniform Light lights[LIGHT_COUNT];
+uniform Light light;
 
 layout (location = 0) out vec4 FragColor;
 
@@ -66,7 +65,8 @@ void main()
     // because of interpolation
     vec3 normal = normalize(normalInt);
 
-    Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
+    // Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
+    // vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
     vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
 
     // Ambient Reflection: I_A = k_A * I_L

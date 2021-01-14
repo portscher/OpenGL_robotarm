@@ -32,6 +32,7 @@ typedef struct keyboard
     int lightUp;
     int lightDown;
     int reset;
+    int moveLight;
 } KeyboardState;
 
 
@@ -60,5 +61,11 @@ GLuint CreateShaderProgram(string vsPath, string fsPath);
 float constrainAngle(float x);
 
 void BindUniform1f(const string name, GLuint program, float val);
+
+void BindUniform4f(const string name, GLuint program, float* matrix);
+
+void BindUniform3f(const string name, GLuint program, Vector matrix);
+
+int BindBasics(GLuint VBO, GLuint CBO, GLuint IBO, GLuint NBO, GLuint UVBO);
 
 #endif
