@@ -2,7 +2,7 @@
 
 ## Short description
 
-This project contains a simple simulated robot arm made with OpenGL and written in C++. 
+This project contains a simple simulated robot arm using the OpenGL library and written in C++. 
 
 ## How to run the project
 
@@ -11,7 +11,7 @@ This project contains a simple simulated robot arm made with OpenGL and written 
   - cd build
   - cmake ..
   - make
-  - ./assign_3
+  - ./assign_5
 
 ## Keyboard controls
 
