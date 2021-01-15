@@ -12,6 +12,8 @@ This project contains a simple simulated robot arm using the OpenGL library and 
   - cmake ..
   - make
   - ./assign_5
+  
+![arm img](https://github.com/portscher/OpenGL_robotarm/blob/master/img/arm_img.png)
 
 ## Keyboard controls
 
