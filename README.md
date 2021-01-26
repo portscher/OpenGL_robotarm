@@ -2,7 +2,8 @@
 
 ## Short description
 
-This project contains a simple simulated robot arm using the OpenGL library and written in C++. 
+This project contains a simple simulated robot arm using the OpenGL library and written in C++. We're using OpenGL version 4.6 (Core Profile) Mesa 20.2.6.
+
 
 ## How to run the project
 
