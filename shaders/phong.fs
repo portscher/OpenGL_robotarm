@@ -65,15 +65,13 @@ void main()
     // because of interpolation
     vec3 normal = normalize(normalInt);
 
-    // Light light = Light(vec3(0, 0, -5), vec3(1, 2, 1));
-    // vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
     vec3 lightFactor = calculatePhong(normal, vertPosInt, light);
 
     // Ambient Reflection: I_A = k_A * I_L
     // k_A: AmbientFactor
     // I_L: Light at Surface Location
     vec3 ambientPart = vec3(TexColor * AmbientFactor);
-    vec3 result = (lightFactor + ambientPart);
+    vec3 result = (lightFactor * TexColor.xyz);
 
-    FragColor = vec4(TexColor.xyz * result, 1.);
+    FragColor = vec4(result + ambientPart, 1.);
 }

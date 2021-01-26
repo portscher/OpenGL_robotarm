@@ -127,10 +127,6 @@ void Arm::display(GLint program)
     }
     glUniformMatrix4fv(ModelUniform, 1, GL_TRUE, internal);
 
-    glEnableVertexAttribArray(vNormal);
-    glBindBuffer(GL_ARRAY_BUFFER, NBO);
-    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
     /* Bind VAO of the current object */
     glBindVertexArray(VAO);
     /* Draw the data contained in the VAO */
@@ -150,11 +146,9 @@ void Arm::display(GLint program)
     /* Uniform integer used to enable/disable texture mapping */
     GLint UseTexUniform = glGetUniformLocation(program, "UseTexture");
 
-
     glUniform1i(UseTexUniform, 1);
     /* Use filled polygons rendering */
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 
     glBindVertexArray(0);
     for (auto limb : limbs)
