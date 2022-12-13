@@ -1,4 +1,4 @@
-# Visual Computing Project by Juan Pablo Stumpf, Philip Wille and Andrea Portscher
+# Banana arm
 
 ## Short description
 
